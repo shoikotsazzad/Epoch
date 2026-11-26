@@ -1,0 +1,129 @@
+# Stack Garden: design system
+
+Derived from `design/REFERENCES.md`. Tokens live in **`src/app/globals.css`** (`@theme`, Tailwind v4) and are mirrored in **`src/visual/tokens.ts`** for canvas code. A unit test (`src/visual/tokens.test.ts`) fails if the two disagree, if any text colour drops below WCAG AA, or if pure black or white sneaks in.
+
+---
+
+## 1. Direction: "Moonlit ink"
+
+The references pull two ways. The art-direction and generative images are **sumi-e / pen ink on light paper**; the UI references and the two night courtyards are **dark**. The brief requires a dark night garden, so we:
+
+- **Invert the sumi-e:** the ground is the darkest papers from the palette stack (charcoal / slate-teal). Strokes are **moonlit rice-paper ink** (`paper-100`, warm off-white, never `#fff`).
+- Keep the **top-down zen garden** composition (`8099…`, `877a…`, `e609…`): every plant sits in its own raked rings, and the rings meet and interfere.
+- Use **one warm accent**, lantern amber, *only* for "the note sounding now" (and the primary action). Everything else is cool and quiet.
+- Keep the **printmaker restraint**: few elements, even line spacing, lots of empty space. Ignore the daytime greens and the dense hatching.
+
+Emotional target: *standing in a temple garden at night with a paper lantern.* Calm, slow, spacious.
+
+---
+
+## 2. Colour tokens (dark only)
+
+| Token | Hex | Use |
+|---|---|---|
+| `ink-950` | `#0b1012` | Page / garden ground (near-black slate-teal, **not** `#000`) |
+| `ink-900` | `#10171a` | Panel base (used at ~72% alpha) |
+| `ink-800` | `#172125` | Raised surfaces, slider track, hover |
+| `slate-700` | `#22313a` | Hairlines, panel borders, inactive strokes |
+| `slate-600` | `#2d4148` | Sand furrow shadow side |
+| `teal-500` | `#3e5d62` | Faint geometry (Cantor removed parts, X-ray inactive frames) |
+| `sea-400` | `#6e9396` | Secondary strokes, inactive icons (≥ 3:1 on ground) |
+| `sea-300` | `#9ebdbb` | Sand line highlight, **focus ring**, links |
+| `pond-700` | `#163a42` | Deep pools (sunflower bed, X-ray dim tint) |
+| `moss-500` | `#7c8b5e` | Bonsai foliage dabs (low alpha) |
+| `paper-100` | `#e7e0d1` | Primary text, ink strokes |
+| `paper-300` | `#bdb5a5` | Secondary text, stones |
+| `paper-500` | `#8e877a` | Muted text, captions (still ≥ 4.5:1 on all surfaces) |
+| `lantern-400` | `#e8aa62` | **The warm accent:** note playing now, primary button |
+| `lantern-200` | `#f5d6a8` | Glow core of the accent (tiny radius only) |
+
+Measured contrast on `ink-950` / on `ink-800`: paper-100 14.6 / 12.5 · paper-300 9.4 / 8.1 · paper-500 5.4 / 4.6 · lantern-400 9.4 / 8.1 · sea-300 9.5 / 8.2 · sea-400 5.7 / 4.9.
+
+**State never relies on colour alone.** Muted plants also show a struck-through label and dimmed strokes, the selected plant shows a dashed ring, and memo hits in X-ray show a "memo" tag.
+
+### Preset palette variants (Milestone 4)
+Small shifts, never a new palette: they nudge the ground tint, the sand-line alpha and the accent warmth.
+
+| Variant | Ground | Accent | Feel |
+|---|---|---|---|
+| night (default) | `ink-950` | `lantern-400` | moonlit |
+| dawn | ground lifted ~4% toward `pond-700` | accent +5% lightness | first light |
+| rain | ground +3% teal | accent −10% saturation | wet stone |
+| floating | ground +2% toward `sea-400` | accent unchanged, sand alpha −20% | weightless |
+| deep | ground −2% | accent −15% lightness | almost asleep |
+
+---
+
+## 3. Typography (via `next/font`)
+
+- **Display / headings:** *Shippori Mincho* 400/500. A Japanese mincho serif with refined Latin; title, plant names, Begin screen. Letter-spacing `0.02em`.
+- **UI:** *Manrope* (variable). Labels, values, captions. Labels are uppercase 11–12px with `tracking-label` (0.08em) at weight 500.
+- Scale: title 40/48px (mobile 32), panel heading 20px display, body 15px, label 12px, caption 13px (`text-caption`).
+- Numbers in sliders use `font-variant-numeric: tabular-nums`.
+
+## 4. Spacing, radii, layout
+
+- Spacing on a 4px base: `4 8 12 16 24 32 48 64 96`. The screen edge gutter is 24px (16px on phones).
+- Radii: `sm 8px` (chips), `md 14px` (slider rows), `lg 22px` (panels), pill (buttons).
+- **Layout:** the canvas fills the viewport. UI floats at the edges and never covers the central ~60% of the garden.
+  - Top-left: title (display serif, `paper-300`).
+  - Top-right: Mood · Play/Pause · Export · X-ray · `?` (icon buttons, 44px targets).
+  - Bottom-centre: seed tray (4 seeds). On phones it becomes a bottom sheet.
+  - Bottom: one-line caption strip (`paper-500`), centred under the tray.
+  - Plant panel: slides in from the right (or rises as a bottom sheet on phones), 320px wide.
+- **Max 3 controls visible by default** (Play/Pause, Mood, Export). Everything else lives behind `?`, the Advanced drawer or the plant panel.
+
+## 5. Panels, buttons, sliders
+
+- **Panel:** `ink-900` at 72% alpha, 1px `slate-700` border, radius `lg`, `backdrop-filter: blur(8px)` on **floating panels only** (no glassmorphism everywhere), soft shadow `0 20px 60px rgb(0 0 0 / 0.35)`. Padding 20–24px.
+- **Icon button:** 44×44, transparent, `sea-400` icon (thin 1.5px stroke, hand-drawn-feeling SVG; never emoji). Hover: `ink-800` fill. Active: `paper-100` icon.
+- **Primary button (Begin, Export):** pill, 1px `lantern-400` border, text `lantern-400`. Hover fills `lantern-400` at 12%. There is never a solid white button.
+- **Slider row** (from `6aebb…`): a pill row (`ink-800`, radius `md`, 48px tall) with the label left (uppercase 12px `paper-300`), a dotted tick track, a thin vertical thumb (2×18px `paper-100`) and the value right (tabular, `paper-100`). It is a native `<input type="range">` with a `<label>`, restyled; focus shows the `sea-300` ring around the whole row.
+
+## 6. Motion
+
+- UI transitions: **400–800ms** `cubic-bezier(0.45, 0, 0.55, 1)` (ease-in-out, token `--ease-calm`). Framer Motion with `useReducedMotion` (falls back to opacity only).
+- Parameter changes ramp over **~1.5s** (audio `rampTo`, visual lerp).
+- Glows: fade **in ~300ms**, **out ~1.5s**. Nothing bounces, nothing flashes, and no element pulses more than **3×/second** (the scheduler enforces a minimum gap per plant).
+- **Idle fade:** UI panels fade to **20% opacity after 6s** idle and return on mouse move, key press or focus.
+- Planting: the layer fades in over 4s while the plant draws itself stroke by stroke. Removal fades out over 3s and the strokes dissolve into sand.
+- **Reduced motion** (OS setting or in-app toggle): no sway, no particles, no ripples, no stroke-by-stroke growth (shapes fade in), opacity-only transitions.
+
+## 7. Texture
+
+- **Film grain:** a pre-rendered 256px noise tile, overlaid at 4–6% alpha, offset each frame by a random integer (cheap and alive). It stays static under reduced motion.
+- **Vignette:** a radial gradient from transparent at 55% to `ink-950` at 85% alpha at the corners.
+- **Raked sand** (from `877a…`, `8099…`, `4df6…`): horizontal-ish parallel lines, 9–12px apart, `sea-300` at 7–10% alpha, each with a darker `slate-600` twin offset 1px (furrow shadow). Lines are displaced by a field that **bends around each plant** and **closes into 4–6 concentric rings** around it. Ripples on notes are a ring of extra displacement travelling outward (~60px/s), fading over 1.5s. Static lines are cached offscreen and redrawn only when the garden changes.
+- **Motes:** 12–30 slow drifting petals / dust (from the night courtyards), `paper-300` at 15–30% alpha, ~5–15px/s. Fewer on slow frames, none with reduced motion.
+
+## 8. Plants: visual technique
+
+| Plant | Technique | Glow on note |
+|---|---|---|
+| **Bonsai** | Ink-brush segments: a tapered quadratic stroke per branch whose width follows depth (trunk thick, twigs hairline), drawn in `paper-100` at 85% alpha with a slight dry-brush texture (2–3 offset thin strokes at low alpha). Foliage is soft `moss-500` dabs at the leaves (from `0d22…`, `973b…`). Wind sways each segment by `sin(t·0.3 + depth)` × depth weight. Grows branch by branch in call order. | The branch being called glows `lantern-400` (in 300ms, out 1.5s); leaves emit a tiny amber bloom. |
+| **Rain** | The Cantor bars as a thin stacked ladder (one row per level, `sea-300` lines, removed middles as `teal-500` dotted gaps). Surviving deepest segments release **drops** that fall to the sand and become **ripple rings**. | The segment brightens, then its drop lands as a ring (no hard flash). |
+| **Stones** | A triangle of rounded stones (`paper-300`, slightly irregular polygons like deckled paper) at the subdivision vertices of the deepest level. Thin `sea-400` hairlines show the Sierpinski edges, and each stone has its own raked rings. The three outer corners are the voices. | The singing corner's stone warms to amber and its rings breathe outward. |
+| **Sunflower** | Phyllotaxis dots (`c075…`): unlit seeds are tiny `paper-500` dots at 40% on a faint `pond-700` disc. Fibonacci-indexed seeds are larger and light up **in completion order**. | The seed glows amber, with a soft halo of radius ×3. |
+
+## 9. X-ray mode
+
+- Scene dims to 35% under a `pond-700` tint at 55%. Non-active geometry turns `teal-500`.
+- The active call path is drawn in `paper-100` with a `lantern-400` head (the current frame). Depth labels use 11px mono `paper-300`.
+- Side panel (right): the stack as a vertical list of frames, `fib(n=6)` above `fib(n=5)` and so on, indented by depth, current frame bordered in amber. Memo hits are tagged **"memo"** and drawn as pruned (dashed) branches.
+- All overlay text sits on `ink-900` ≥ 90% alpha pills, so contrast ≥ 4.5:1 regardless of the garden underneath.
+
+## 10. Sound settings
+To be documented in Milestone 2 after tuning by ear (oscillators, envelopes, FX values, levels).
+
+## 11. Don't
+
+- No purple-blue "AI" gradients, neon, or saturated electric blue (desaturate everything toward sea glass).
+- No glassmorphism everywhere. Blur is allowed only on floating panels, and subtly.
+- No emoji icons; use thin-stroke SVG only.
+- No pure white (`#fff`) and no pure black (`#000`).
+- No bouncing, springy overshoot, shaking, or anything flashing more than 3×/s.
+- No more than 3 controls visible by default. Never cover the centre of the garden.
+- No hard drum transients, no raw saw/square timbres.
+- No light theme.
+- No copied artwork, sampled audio, or third-party characters; everything is procedural.
+- Don't use colour alone to convey state.

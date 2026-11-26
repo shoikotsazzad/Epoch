@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+/*
+ * Stack Garden design tokens (see design/DESIGN.md).
+ * Keep in sync with src/visual/tokens.ts: a unit test checks every colour.
+ * Dark theme only.
+ */
+@theme {
+  --color-ink-950: #0b1012;
+  --color-ink-900: #10171a;
+  --color-ink-800: #172125;
+  --color-slate-700: #22313a;
+  --color-slate-600: #2d4148;
+  --color-teal-500: #3e5d62;
+  --color-sea-400: #6e9396;
+  --color-sea-300: #9ebdbb;
+  --color-pond-700: #163a42;
+  --color-moss-500: #7c8b5e;
+  --color-paper-100: #e7e0d1;
+  --color-paper-300: #bdb5a5;
+  --color-paper-500: #8e877a;
+  --color-lantern-400: #e8aa62;
+  --color-lantern-200: #f5d6a8;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+
+  --ease-calm: cubic-bezier(0.45, 0, 0.55, 1);
+  --duration-ui: 600ms;
+
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.4;
+  --tracking-label: 0.08em;
+}
+
+@theme inline {
+  --font-display: var(--font-shippori), "Hiragino Mincho ProN", Georgia, serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--color-ink-950);
+  color: var(--color-paper-100);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Visible, calm focus ring everywhere (sea glass, 2px, offset). */
+:focus-visible {
+  outline: 2px solid var(--color-sea-300);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-lantern-400) 35%, transparent);
+  color: var(--color-paper-100);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
