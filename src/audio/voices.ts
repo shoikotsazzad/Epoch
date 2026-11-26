@@ -1,8 +1,12 @@
 // One voice per plant kind. Only sine / triangle / soft FM (mod index < 3).
 // Every plant gets: synths -> plant filter -> panner -> gain -> musicBus, plus a reverb send.
+// Sound effects (generated, no samples) join at the panner, so they follow the plant's
+// position, volume, mute, removal and the X-ray fade:
+//   effect source -> fx gain (follows the garden's "Sound effects" level) -> panner
 
 import type * as ToneNS from "tone";
 import type { NoteEvent, PlantKind } from "@/core/types";
+import { MIN_DROP_GAP_SEC, clickFreq, dropletFreq, windLevel, windTarget } from "@/core/effects";
 import type { Engine, ToneLib } from "./engine";
 
 export interface PlantVoice {
@@ -11,6 +15,10 @@ export interface PlantVoice {
   panner: ToneNS.Panner;
   send: ToneNS.Gain;
   trigger(time: number, freq: number, durSec: number, vel: number, e: NoteEvent): void;
+  /** Play the plant's sound effect for this event (see core/effects.ts). */
+  effect(time: number, freq: number, vel: number, e: NoteEvent): void;
+  /** Effects that depend on the plant's recursion parameters (the bonsai's Wind). */
+  setParams(params: object): void;
   /** Notes still sounding at `time` (for the polyphony guard). */
   activeAt(time: number): number;
   maxVoices: number;
@@ -81,6 +89,101 @@ export const VOICE_SETTINGS = {
 
 const POLY: Record<PlantKind, number> = { bonsai: 6, rain: 6, stones: 8, sunflower: 6 };
 
+/** Effect timbres (documented in DESIGN.md §10). Levels sit under the notes and the drone. */
+export const EFFECT_SETTINGS = {
+  wind: { noise: "pink" as const, volume: -4, gustHz: 0.06, gustMin: 0.55 },
+  droplet: {
+    oscillator: { type: "sine" as const },
+    envelope: { attack: 0.003, decay: 0.07, sustain: 0, release: 0.05 },
+    volume: -16,
+    rise: 1.6, // a drop's pitch rises as the bubble closes
+  },
+  click: {
+    pitchDecay: 0.012,
+    octaves: 1.5,
+    oscillator: { type: "sine" as const },
+    envelope: { attack: 0.005, decay: 0.16, sustain: 0, release: 0.08 }, // 5 ms: a soft knock, never a hard transient
+    volume: -18,
+  },
+} as const;
+
+interface Fx {
+  effect(time: number, freq: number, vel: number, e: NoteEvent): void;
+  setParams(params: object): void;
+  nodes: { dispose(): unknown }[];
+}
+
+function createFx(T: ToneLib, engine: Engine, kind: PlantKind, out: ToneNS.InputNode): Fx | null {
+  const fxGain = new T.Gain(0);
+  const release = engine.registerFx(fxGain);
+  fxGain.connect(out);
+  const unregister = { dispose: release };
+
+  if (kind === "bonsai") {
+    const w = EFFECT_SETTINGS.wind;
+    const noise = new T.Noise({ type: w.noise, volume: w.volume });
+    const band = new T.Filter({ type: "bandpass", frequency: 420, Q: 0.9 });
+    const level = new T.Gain(windLevel(0.3));
+    const gust = new T.Gain(1);
+    const lfo = new T.LFO({ frequency: w.gustHz, min: w.gustMin, max: 1, type: "sine" });
+    lfo.connect(gust.gain);
+    noise.chain(band, level, gust, fxGain);
+    noise.start();
+    lfo.start();
+    let wind = 0.3;
+    return {
+      effect(time, _freq, _vel, e) {
+        const t = windTarget(e.role, e.depth, wind);
+        level.gain.rampTo(t.level, t.ramp, time);
+        band.frequency.rampTo(t.freq, t.ramp, time);
+      },
+      setParams(params) {
+        const next = (params as { wind?: number }).wind;
+        if (typeof next !== "number" || next === wind) return;
+        wind = next;
+        level.gain.rampTo(windLevel(wind), 1.5);
+      },
+      nodes: [unregister, noise, band, level, gust, lfo, fxGain],
+    };
+  }
+
+  if (kind === "rain") {
+    const d = EFFECT_SETTINGS.droplet;
+    const drop = new T.Synth({ oscillator: d.oscillator, envelope: d.envelope, volume: d.volume });
+    const hp = new T.Filter({ type: "highpass", frequency: 700, Q: 0.5 });
+    drop.chain(hp, fxGain);
+    let last = -Infinity;
+    return {
+      effect(time, _freq, vel, e) {
+        if (time - last < MIN_DROP_GAP_SEC) return;
+        last = time;
+        const f = dropletFreq(e.frameId, e.depth);
+        drop.triggerAttackRelease(f, 0.05, time, Math.min(1, 0.5 + vel * 0.5));
+        drop.frequency.exponentialRampToValueAtTime(f * d.rise, time + 0.045);
+      },
+      setParams() {},
+      nodes: [unregister, drop, hp, fxGain],
+    };
+  }
+
+  if (kind === "stones") {
+    const c = EFFECT_SETTINGS.click;
+    const knock = new T.MembraneSynth({ pitchDecay: c.pitchDecay, octaves: c.octaves, oscillator: c.oscillator, envelope: c.envelope, volume: c.volume });
+    knock.connect(fxGain);
+    return {
+      effect(time, freq, vel) {
+        knock.triggerAttackRelease(clickFreq(freq), 0.08, time, Math.min(1, 0.4 + vel * 0.5));
+      },
+      setParams() {},
+      nodes: [unregister, knock, fxGain],
+    };
+  }
+
+  release();
+  fxGain.dispose();
+  return null;
+}
+
 export function createPlantVoice(T: ToneLib, engine: Engine, kind: PlantKind, pan: number, send: number): PlantVoice {
   const gain = new T.Gain(0);
   const panner = new T.Panner(pan);
@@ -99,6 +202,8 @@ export function createPlantVoice(T: ToneLib, engine: Engine, kind: PlantKind, pa
     synths.push(p);
     return p;
   };
+
+  const fx = createFx(T, engine, kind, panner);
 
   let main: ToneNS.PolySynth;
   let extra: ToneNS.PolySynth | null = null;
@@ -145,8 +250,15 @@ export function createPlantVoice(T: ToneLib, engine: Engine, kind: PlantKind, pa
       if (!useExtra) ends.push(time + durSec * 0.6 + release * 0.5);
       synth.triggerAttackRelease(freq, durSec, time, vel);
     },
+    effect(time, freq, vel, e) {
+      fx?.effect(time, freq, vel, e);
+    },
+    setParams(params) {
+      fx?.setParams(params);
+    },
     dispose() {
       synths.forEach((x) => x.dispose());
+      fx?.nodes.forEach((n) => n.dispose());
       filter.dispose();
       panner.dispose();
       gain.dispose();

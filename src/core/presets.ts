@@ -17,6 +17,8 @@ export interface Preset {
   palette: PaletteVariant;
   reverb: number;
   drone: number;
+  /** Level of the sound-effect layer (wind, droplets, stone clicks). */
+  effects: number;
   layout: { kind: PlantKind; x: number; y: number; params?: Partial<PlantParamsMap[PlantKind]> }[];
 }
 
@@ -31,6 +33,7 @@ export const PRESETS: Record<PresetId, Preset> = {
     palette: "night",
     reverb: 0.45,
     drone: 0.5,
+    effects: 0.55,
     layout: [{ kind: "bonsai", x: 0.5, y: 0.52 }],
   },
   dawn: {
@@ -43,6 +46,7 @@ export const PRESETS: Record<PresetId, Preset> = {
     palette: "dawn",
     reverb: 0.38,
     drone: 0.4,
+    effects: 0.5,
     layout: [
       { kind: "bonsai", x: 0.42, y: 0.5 },
       { kind: "sunflower", x: 0.68, y: 0.4 },
@@ -58,6 +62,7 @@ export const PRESETS: Record<PresetId, Preset> = {
     palette: "rain",
     reverb: 0.5,
     drone: 0.45,
+    effects: 0.7,
     layout: [
       { kind: "rain", x: 0.32, y: 0.38 },
       { kind: "stones", x: 0.62, y: 0.6 },
@@ -73,6 +78,7 @@ export const PRESETS: Record<PresetId, Preset> = {
     palette: "floating",
     reverb: 0.55,
     drone: 0.42,
+    effects: 0.45,
     layout: [
       { kind: "stones", x: 0.5, y: 0.55 },
       { kind: "sunflower", x: 0.74, y: 0.36, params: { density: 0.25 } },
@@ -89,6 +95,7 @@ export const PRESETS: Record<PresetId, Preset> = {
     palette: "deep",
     reverb: 0.55,
     drone: 0.6,
+    effects: 0.4,
     layout: [
       { kind: "stones", x: 0.5, y: 0.56, params: { levels: 2, canonDelay: 4 } },
       { kind: "rain", x: 0.3, y: 0.42, params: { levels: 3, removed: 0.45 } },
@@ -137,6 +144,7 @@ export function gardenFromPreset(presetId: PresetId, seed: number): GardenState 
     bpm: p.bpm,
     reverb: p.reverb,
     drone: p.drone,
+    effects: p.effects,
     plants: p.layout.map((l, i) => makePlant(l.kind, l.x, l.y, l.params, `${l.kind[0]}${i}`)),
   };
 }

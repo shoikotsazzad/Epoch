@@ -6,6 +6,7 @@ import { PLANT_KINDS } from "./types";
 import { LOOP_SECONDS_RANGE, PARAM_SPECS, clamp, clampParams } from "./params";
 import { PRESETS } from "./presets";
 import { SCALES } from "./scales";
+import { DEFAULT_EFFECTS } from "./effects";
 
 const KIND_CODE: Record<PlantKind, string> = { bonsai: "b", rain: "r", stones: "s", sunflower: "f" };
 const CODE_KIND: Record<string, PlantKind> = { b: "bonsai", r: "rain", s: "stones", f: "sunflower" };
@@ -23,6 +24,7 @@ interface Compact {
   t: number; // tempo
   w: number; // reverb wet
   d: number; // drone
+  e?: number; // sound effects (absent in older links)
   g: [string, string, number, number, number[], number, number, number][]; // id, kind, x, y, params, volume, loop, muted
 }
 
@@ -54,6 +56,7 @@ export function encodeGarden(state: GardenState): string {
     t: r3(state.bpm),
     w: r3(state.reverb),
     d: r3(state.drone),
+    e: r3(state.effects),
     g: state.plants.map((pl) => [
       pl.id,
       KIND_CODE[pl.kind],
@@ -113,6 +116,7 @@ export function decodeGarden(encoded: string): GardenState | null {
       bpm: clamp(num(c.t, PRESETS[preset].bpm), BPM_RANGE.min, BPM_RANGE.max),
       reverb: clamp(num(c.w, 0.45), 0, 1),
       drone: clamp(num(c.d, 0.5), 0, 1),
+      effects: clamp(num(c.e, DEFAULT_EFFECTS), 0, 1),
       plants,
     };
   } catch {

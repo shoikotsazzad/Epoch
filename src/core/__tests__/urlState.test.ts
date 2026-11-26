@@ -42,6 +42,7 @@ describe("url state", () => {
       t: 999,
       w: 7,
       d: -1,
+      e: 9,
       g: [
         ["x", "b", 9, -9, [99, 99, 99, 99, 99, 99], 5, 1000, 1],
         ["y", "zzz", 0, 0, [], 1, 20, 0],
@@ -54,6 +55,7 @@ describe("url state", () => {
     expect(g.bpm).toBeLessThanOrEqual(66);
     expect(g.reverb).toBeLessThanOrEqual(1);
     expect(g.drone).toBeGreaterThanOrEqual(0);
+    expect(g.effects).toBe(1);
     expect(g.plants).toHaveLength(1);
     const p = g.plants[0];
     expect(p.x).toBe(1);

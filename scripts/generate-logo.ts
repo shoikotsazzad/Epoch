@@ -36,7 +36,7 @@ const INK950 = "#0b1012";
 const PAPER100 = "#e7e0d1";
 const PAPER300 = "#bdb5a5";
 const WORD = "Stack Garden";
-const SUB = "four recursions, one garden";
+const SUB = "a recursive tree that sings";
 
 function findChrome(): string | null {
   const candidates = [

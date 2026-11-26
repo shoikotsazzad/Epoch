@@ -32,6 +32,7 @@ export async function renderGarden(
           scale: state.scale,
           reverb: state.reverb,
           drone: state.drone,
+          effects: state.effects,
           master: 0.8,
         });
         // the reverb impulse is generated asynchronously: wait before scheduling

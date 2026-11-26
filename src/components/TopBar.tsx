@@ -2,11 +2,53 @@
 
 import { patchUi, uiStore, useStore } from "@/state/store";
 import { getRuntime } from "@/runtime/runtime";
-import { DownloadIcon, PauseIcon, PlayIcon, SlidersIcon } from "./icons";
+import { useEffect, useState } from "react";
+import { DownloadIcon, MoonIcon, PauseIcon, PlayIcon, SlidersIcon } from "./icons";
 import { IconButton } from "./ui";
 import MoodMenu from "./MoodMenu";
 import BrandMark from "./BrandMark";
 import { closeAll } from "@/state/actions";
+
+/** Desktop only: a quiet countdown while the sleep timer runs. Opens Settings, where it can be changed or turned off. */
+function SleepPill() {
+  const sleepEndsAt = useStore(uiStore, (s) => s.sleepEndsAt);
+  const panel = useStore(uiStore, (s) => s.panel);
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    if (!sleepEndsAt) return;
+    const tick = () => setNow(performance.now());
+    const first = setTimeout(tick, 0);
+    const t = setInterval(tick, 1000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(t);
+    };
+  }, [sleepEndsAt]);
+  if (!sleepEndsAt || !now) return null;
+  const left = Math.max(0, Math.round((sleepEndsAt - now) / 1000));
+  const mm = Math.floor(left / 60);
+  const ss = String(left % 60).padStart(2, "0");
+  const windingDown = left <= 60;
+  return (
+    <button
+      type="button"
+      onClick={() => patchUi({ panel: panel === "menu" ? null : "menu" })}
+      aria-controls="menu-drawer"
+      aria-expanded={panel === "menu"}
+      title="Sleep timer: open Settings to change or stop it"
+      className={`hidden h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-3.5 text-[14px] tabular-nums transition-colors duration-500 ease-calm lg:inline-flex ${
+        windingDown ? "border-lantern-400/50 text-lantern-400" : "border-slate-700 text-sea-300 hover:bg-ink-800 hover:text-paper-100"
+      }`}
+    >
+      <MoonIcon width={17} height={17} />
+      <span>Sleep</span>{" "}
+      <span className="text-paper-100">
+        {mm}:{ss}
+      </span>
+      <span className="sr-only"> left on the sleep timer{windingDown ? ", winding down" : ""} (open Settings)</span>
+    </button>
+  );
+}
 
 export default function TopBar() {
   const playing = useStore(uiStore, (s) => s.playing);
@@ -22,20 +64,23 @@ export default function TopBar() {
       <button
         type="button"
         onClick={() => closeAll()}
-        aria-label="Stack Garden home: close open panels"
         title="Stack Garden: back to the garden"
         className="group pointer-events-auto flex min-w-0 select-none items-center gap-2.5 rounded-full pr-2 text-left sm:gap-3"
       >
+        {/* brightened mark with a soft moonlight ring, sized to the two-line title on desktop */}
         <BrandMark
-          size={36}
-          className="h-8 w-8 shrink-0 shadow-[0_0_0_1px_rgb(232_170_98/0.45),0_0_18px_rgb(232_170_98/0.35)] transition-shadow duration-500 group-hover:shadow-[0_0_0_1px_rgb(232_170_98/0.7),0_0_26px_rgb(232_170_98/0.5)] sm:h-9 sm:w-9"
+          size={48}
+          className="h-9 w-9 shrink-0 brightness-[1.12] shadow-[0_0_0_1px_rgb(231_224_209/0.32),0_0_14px_rgb(231_224_209/0.14)] transition-[box-shadow,filter] duration-500 group-hover:brightness-[1.25] group-hover:shadow-[0_0_0_1px_rgb(231_224_209/0.5),0_0_20px_rgb(231_224_209/0.24)] sm:h-11.5 sm:w-11.5"
         />
         <span className="min-w-0 max-[359px]:hidden">
           <span className="block truncate whitespace-nowrap font-display text-[19px] font-medium leading-tight tracking-wide text-paper-100 sm:text-[28px] sm:text-paper-300 sm:transition-colors sm:duration-500 sm:group-hover:text-paper-100">
             Stack Garden
           </span>
-          <span className="hidden whitespace-nowrap text-caption text-paper-300/90 sm:block">four recursions, one garden</span>
+          <span className="hidden whitespace-nowrap text-caption text-paper-300/90 sm:block">a recursive tree that sings</span>
         </span>
+        {/* accessible name = the visible title (+ subtitle) + what the button does; the title is hidden below 360 px */}
+        <span className="sr-only min-[360px]:hidden">Stack Garden</span>
+        <span className="sr-only"> (home: close open panels)</span>
       </button>
       <nav aria-label="Main controls" className="pointer-events-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
         {/* "How to use" lives in the top bar on wide screens, inside Settings below 768 px */}
@@ -56,7 +101,8 @@ export default function TopBar() {
           How to use
           {!helpSeen && <span className="sr-only"> (new here? start here)</span>}
         </button>
-        {/* on phones Mood and Export live in Settings, keeping the bar calm */}
+        <SleepPill />
+        {/* on phones Mood lives in Settings, keeping the bar calm */}
         <div className="hidden sm:block">
           <MoodMenu />
         </div>

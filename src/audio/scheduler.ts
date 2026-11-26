@@ -12,6 +12,7 @@ import { deriveSeed, mulberry32 } from "@/core/rng";
 import { bassSafe, foldIntoRange, midiToFreq, quantize } from "@/core/scales";
 import { DensityLimiter, priorityOf } from "@/core/density";
 import { panFor, reverbSendFor } from "@/core/garden";
+import { markEffects } from "@/core/effects";
 import type { Engine, ToneLib } from "./engine";
 import { createPlantVoice, type PlantVoice } from "./voices";
 
@@ -27,6 +28,8 @@ export interface PartEvent {
   time: string;
   e: NoteEvent;
   vel: number;
+  /** Also play the plant's sound effect (wind / droplet / stone click). */
+  fx: boolean;
 }
 
 export interface GrowEntry {
@@ -59,13 +62,14 @@ export function buildPartEvents(plant: Plant, grow: GrowResult, gardenSeed: numb
   const loopTicks = Math.round(loopBeats * ppq);
   const jitterBeats = (0.03 * REF_BPM) / 60; // up to ±30 ms
   const events: PartEvent[] = [];
-  for (const e of grow.events) {
+  const fx = markEffects(plant.kind, grow.events);
+  for (const [i, e] of grow.events.entries()) {
     const sign = rand() < 0.5 ? -1 : 1;
     const jitter = e.role === "drone" ? 0 : sign * (0.33 + rand() * 0.67) * jitterBeats; // 10..30 ms
     const beat = Math.max(0, e.time * scale + jitter);
     const ticks = Math.min(loopTicks - 1, Math.round(beat * ppq));
     const vel = Math.min(1, Math.max(0.02, e.vel * (0.9 + rand() * 0.2)));
-    events.push({ time: `${ticks}i`, e, vel });
+    events.push({ time: `${ticks}i`, e, vel, fx: fx[i] });
   }
   return { events, loopTicks };
 }
@@ -100,6 +104,7 @@ export class Scheduler {
       }
       if (entry.key !== grow.key || entry.plant.loopSeconds !== plant.loopSeconds) this.replacePart(entry, plant, grow);
       if (entry.plant.volume !== plant.volume || entry.plant.muted !== plant.muted) entry.voice.gain.gain.rampTo(this.targetGain(plant), 1.5);
+      if (entry.plant.params !== plant.params) entry.voice.setParams(plant.params);
       if (entry.plant.x !== plant.x || entry.plant.y !== plant.y) {
         entry.voice.panner.pan.rampTo(panFor(plant.x), 1.5);
         entry.voice.send.gain.rampTo(reverbSendFor(plant.x, plant.y), 1.5);
@@ -115,6 +120,7 @@ export class Scheduler {
 
   private add(plant: Plant, grow: GrowEntry, fadeIn: boolean) {
     const voice = createPlantVoice(this.T, this.engine, plant.kind, panFor(plant.x), reverbSendFor(plant.x, plant.y));
+    voice.setParams(plant.params);
     const entry: Entry = { plant, key: grow.key, voice, part: null, originTicks: 0 };
     const target = this.targetGain(plant);
     if (fadeIn) {
@@ -160,13 +166,15 @@ export class Scheduler {
     const entry = this.entries.get(plantId);
     if (!entry || entry.plant.muted) return;
     const e = ev.e;
-    const exempt = e.role === "drone";
-    if (!this.limiter.allow(plantId, time, priorityOf(e), exempt)) return;
-    if (!exempt && entry.voice.activeAt(time) >= entry.voice.maxVoices) return;
     const { scale, root } = this.music();
     let midi = quantize(e.degree, e.octave, scale, root);
     if (entry.plant.kind === "stones" || entry.plant.kind === "rain") midi = bassSafe(midi, root);
     midi = foldIntoRange(midi, 36, 86); // nothing above D6: bright, never piercing
+    // effects follow the recursion itself, even when the density limiter thins the note
+    if (ev.fx) entry.voice.effect(time, midiToFreq(midi), ev.vel, e);
+    const exempt = e.role === "drone";
+    if (!this.limiter.allow(plantId, time, priorityOf(e), exempt)) return;
+    if (!exempt && entry.voice.activeAt(time) >= entry.voice.maxVoices) return;
     const durSec = Math.max(0.2, (e.dur * 60) / this.transport.bpm.value);
     entry.voice.trigger(time, midiToFreq(midi), durSec, ev.vel, e);
     this.onNote?.(plantId, e, midi, time);

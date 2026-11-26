@@ -15,3 +15,12 @@ Each file contains: Date · Tool/model · Prompt (verbatim) · Response · Files
 | [007](007-user-logo-and-mobile-layout.md) | 2026-11-26 | polish | The user's logo.jpeg becomes the brand (mark, favicon, icons, OG image); phone layout: calm top bar, full sheets, bottom sheets, dock, no dev-badge overlap |
 | [008](008-mobile-download-location.md) | 2026-11-26 | n/a | Where the download (export) button is on phones |
 | [009](009-close-behaviour-mobile-export-logo-glow.md) | 2026-11-26 | polish | Export in the phone top bar; logo glow; planting, empty sand and the home title close every open panel |
+| [010](010-hackathon-audit.md) | 2026-11-26 | n/a | Audit against the hackathon brief, rating, winning odds and new feature ideas |
+| [011](011-brief-conflict-check.md) | 2026-11-26 | n/a | Checked the one-paragraph brief: no conflict; "a recursive function" and sound effects are the soft spots |
+| [012](012-sound-effects-and-framing-plan.md) | 2026-11-26 | n/a | Explained the planned sound-effect layer (wind, droplets, stone clicks) and the bonsai-first framing |
+| [013](013-sound-effects-and-bonsai-framing.md) | 2026-11-26 | polish | Sound effects from the recursion (wind, droplets, stone clicks) with a Settings slider; bonsai framed as the chosen function; home-button a11y fix |
+| [014](014-demo-walkthrough.md) | 2026-11-26 | n/a | Shot-by-shot demo video walkthrough (what to click, what to say) |
+| [015](015-sleep-timer-pill-and-brighter-logo.md) | 2026-11-26 | polish | Sleep timer countdown in the desktop top bar; brighter, larger logo with a moonlight ring |
+| [016](016-final-audit.md) | 2026-11-26 | n/a | Re-audit against the full challenge statement: all met, about 8.9/10, winning odds |
+| [017](017-logo-smaller-softer.md) | 2026-11-26 | polish | Header logo smaller (46 / 36 px) with a softer white ring and glow |
+| [018](018-readme-rewrite.md) | 2026-11-26 | docs | README rewritten as a project overview: what it is, who it helps, features, how it works; no hackathon mentions |

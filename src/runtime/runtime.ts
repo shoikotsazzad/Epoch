@@ -69,7 +69,7 @@ class GardenRuntime {
     T.setContext(rawCtx);
     await T.start();
     const g = gardenStore.get();
-    const engine = buildEngine(T, { root: g.root, scale: g.scale, reverb: g.reverb, drone: g.drone, master: uiStore.get().master });
+    const engine = buildEngine(T, { root: g.root, scale: g.scale, reverb: g.reverb, drone: g.drone, effects: g.effects, master: uiStore.get().master });
     this.engine = engine;
     await engine.ready;
     const transport = T.getTransport();
@@ -143,7 +143,7 @@ class GardenRuntime {
     this.renderer?.setGarden(g, grows);
     if (this.scheduler && this.engine && this.T) {
       this.scheduler.sync(g, grows, { fadeIn: true });
-      this.engine.apply({ reverb: g.reverb, drone: g.drone, root: g.root, scale: g.scale });
+      this.engine.apply({ reverb: g.reverb, drone: g.drone, effects: g.effects, root: g.root, scale: g.scale });
       if (g.bpm !== prev.bpm || g.preset !== prev.preset) this.glideTempo();
     }
     const ui = uiStore.get();
@@ -195,7 +195,7 @@ class GardenRuntime {
       const p = gardenStore.get().plants.find((x) => x.id === plantId);
       if (!p) return;
       const frame = this.growFor(plantId)?.trace[e.frameId];
-      this.lastCaption.set(p.kind, { text: noteCaption(p.kind, e, frame, midiToName(midi)), t: performance.now() });
+      this.lastCaption.set(p.kind, { text: noteCaption(p.kind, e, frame, midiToName(midi), gardenStore.get().effects > 0), t: performance.now() });
     }, time);
   };
 

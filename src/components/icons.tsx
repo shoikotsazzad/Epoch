@@ -38,6 +38,11 @@ export const SlidersIcon = (p: SVGProps<SVGSVGElement>) => (
     <circle cx="9" cy="17" r="2" />
   </svg>
 );
+export const MoonIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <path d="M19.5 14.2A7.5 7.5 0 0 1 9.8 4.5a7.5 7.5 0 1 0 9.7 9.7z" />
+  </svg>
+);
 export const CloseIcon = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base(p)}>
     <path d="M6 6l12 12M18 6 6 18" />

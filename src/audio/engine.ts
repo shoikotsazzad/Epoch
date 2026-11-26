@@ -18,6 +18,7 @@ export interface EngineSettings {
   scale: ScaleId;
   reverb: number; // 0..1
   drone: number; // 0..1
+  effects: number; // 0..1 sound-effect layer (wind, droplets, stone clicks)
   master: number; // 0..1 user volume
 }
 
@@ -35,6 +36,7 @@ export const SOUND = {
   limiterDb: -1,
   droneDb: -30, // sits ~12 dB under the notes
   droneLfoHz: 0.03,
+  effectsMax: 1.6, // "Sound effects" 100% = this gain on every effect (55% ≈ 0.9)
 } as const;
 
 export interface Engine {
@@ -48,6 +50,8 @@ export interface Engine {
   master: ToneNS.Gain;
   xraySynth: ToneNS.PolySynth<ToneNS.Synth>;
   ready: Promise<void>;
+  /** Plant voices register their effect gain so the "Sound effects" level reaches it. Returns an unregister function. */
+  registerFx(gain: ToneNS.Gain): () => void;
   apply(settings: Partial<EngineSettings>, ramp?: number): void;
   setMusicLevel(level: number, ramp: number, time?: number): void;
   fadeMaster(level: number, ramp: number, time?: number): void;
@@ -55,6 +59,7 @@ export interface Engine {
 }
 
 const droneGainFor = (level: number, T: ToneLib) => T.dbToGain(SOUND.droneDb) * Math.min(2, level * 2);
+const fxGainFor = (level: number) => Math.min(1, Math.max(0, level)) * SOUND.effectsMax;
 
 export function buildEngine(T: ToneLib, settings: EngineSettings, destination?: ToneNS.InputNode): Engine {
   let current = { ...settings };
@@ -108,6 +113,7 @@ export function buildEngine(T: ToneLib, settings: EngineSettings, destination?: 
   xraySynth.connect(lowpass);
 
   const ready = reverb.ready.then(() => undefined);
+  const fxGains = new Set<ToneNS.Gain>();
 
   return {
     T,
@@ -118,12 +124,20 @@ export function buildEngine(T: ToneLib, settings: EngineSettings, destination?: 
     master,
     xraySynth,
     ready,
+    registerFx(gain) {
+      gain.gain.value = fxGainFor(current.effects);
+      fxGains.add(gain);
+      return () => {
+        fxGains.delete(gain);
+      };
+    },
     apply(next, ramp = 1.5) {
       const prev = current;
       current = { ...current, ...next };
       if (next.reverb !== undefined) reverbSend.gain.rampTo(current.reverb, ramp);
       if (next.drone !== undefined) droneGain.gain.rampTo(droneGainFor(current.drone, T), ramp);
       if (next.master !== undefined) userVol.gain.rampTo(current.master, 0.3);
+      if (next.effects !== undefined && next.effects !== prev.effects) for (const g of fxGains) g.gain.rampTo(fxGainFor(current.effects), ramp);
       if (next.root !== undefined && next.root !== prev.root) {
         droneRoot.frequency.rampTo(midiToFreq(current.root - 12), 3);
         droneFifth.frequency.rampTo(midiToFreq(current.root - 12 + 7), 3);

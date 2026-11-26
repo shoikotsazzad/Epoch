@@ -114,7 +114,7 @@ Small shifts, never a new palette: they nudge the ground tint, the sand-line alp
 
 ## 10. Sound settings (final)
 
-Source of truth: `src/audio/engine.ts` (`SOUND`) and `src/audio/voices.ts` (`VOICE_SETTINGS`).
+Source of truth: `src/audio/engine.ts` (`SOUND`) and `src/audio/voices.ts` (`VOICE_SETTINGS`, `EFFECT_SETTINGS`); effect triggers in `src/core/effects.ts`.
 Levels were set by **measuring rendered exports** (peak / RMS / dynamic range). They were not tuned by ear, so give them a final listen on headphones.
 
 **Global**
@@ -141,6 +141,14 @@ Levels were set by **measuring rendered exports** (peak / RMS / dynamic range). 
 | Stones pad | FM sine/sine, harmonicity 1, index 0.8 | 2.6 / 7.5 | −5 dB | 1.2 kHz |
 | Sunflower bell | FM sine/sine, harmonicity 3.5, index 2 | 0.12 / 4.5 | −13 dB | 3 kHz |
 | X-ray step | triangle | 0.06 / 1.6 | −8 dB | bus |
+
+**Sound effects** (generated, no samples; join each plant at its panner, so they follow pan, volume, mute, removal and the X-ray fade)
+| Plant | Sound | Trigger | Level | Shape |
+|---|---|---|---|---|
+| Bonsai wind | pink noise → band-pass (Q 0.9) → slow gust LFO 0.06 Hz (55–100%) | every push / leaf / pop | resting gain 0.04 + 0.11 × Wind; push at depth d → ×(1 + 0.12 d) | band 420 Hz + 70 Hz per depth on push (0.8 s), back to 420 Hz on pop (2.5 s) |
+| Rain droplet | sine, 3 ms attack, 70 ms decay, pitch rises ×1.6 in 45 ms (a closing bubble), high-pass 700 Hz | every Cantor pulse (≥ 90 ms apart) | −16 dB | 900–2000 Hz: deeper level = higher, seeded variety |
+| Stone click | membrane synth, 5 ms attack, 160 ms decay, pitch drop 1.5 octaves | first note of each canon voice | −18 dB | the voice's note an octave up, kept in 350–900 Hz |
+| Global | "Sound effects" slider 0–100% → effect gain 0–1.6 | | per mood: Night 55%, Dawn 50%, Rain Garden 70%, Floating 45%, Deep Sleep 40% | |
 
 **Deviations from the brief, and why**
 - Bells and rain drops use 0.05–0.12 s attacks (the brief suggests 0.2–0.6 s for notes). A 0.2 s+ attack turns a bell into a swell. These are still click-free sine/FM tones at low velocity.

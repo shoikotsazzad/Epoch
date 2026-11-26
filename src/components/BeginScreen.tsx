@@ -55,7 +55,7 @@ export default function BeginScreen() {
             <p className="mb-5 text-[11px] uppercase tracking-[0.3em] text-sea-300">Recursive soundscapes</p>
             <h1 className="font-display text-5xl font-medium tracking-wide text-paper-100 sm:text-6xl">Stack Garden</h1>
             <p className="mt-6 text-lg leading-relaxed text-paper-300">
-              A garden of four recursive functions. Plant seeds, listen to them grow.
+              One recursive tree, <code className="font-mono text-[0.92em] text-paper-100">branch()</code>, grows into music. Plant more if you like.
             </p>
             <p className="mt-2 text-sm text-paper-500">Headphones recommended.</p>
             <button ref={btn} type="button" onClick={begin} disabled={busy} className="btn-primary mt-10 min-w-40 px-10 py-4 text-base">

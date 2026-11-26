@@ -79,14 +79,14 @@ export function nudgePlant(id: string, dx: number, dy: number) {
   updatePlant(id, clampToBounds(p.x + dx, p.y + dy, boundsFor(p.kind)));
 }
 
-/** Change the mood: scale, tempo, palette, reverb, drone. Keeps your plants (an empty garden gets the starter layout). */
+/** Change the mood: scale, tempo, palette, reverb, drone, effects. Keeps your plants (an empty garden gets the starter layout). */
 export function applyPreset(id: PresetId) {
   const g = gardenStore.get();
   const p = PRESETS[id];
   if (g.plants.length === 0) {
     gardenStore.set(gardenFromPreset(id, g.seed));
   } else {
-    gardenStore.set({ ...g, preset: id, scale: p.scale, root: p.root, bpm: p.bpm, reverb: p.reverb, drone: p.drone });
+    gardenStore.set({ ...g, preset: id, scale: p.scale, root: p.root, bpm: p.bpm, reverb: p.reverb, drone: p.drone, effects: p.effects });
   }
   captionStore.set(`Mood: ${p.name}. ${p.description}.`);
 }
@@ -111,11 +111,11 @@ export function surpriseMe() {
   const seed = freshSeed();
   const preset = PRESET_ORDER[Math.floor(Math.random() * PRESET_ORDER.length)];
   const p = PRESETS[preset];
-  setGarden((s) => ({ ...s, seed, preset, scale: p.scale, root: p.root, bpm: p.bpm, reverb: p.reverb, drone: p.drone }));
+  setGarden((s) => ({ ...s, seed, preset, scale: p.scale, root: p.root, bpm: p.bpm, reverb: p.reverb, drone: p.drone, effects: p.effects }));
   captionStore.set(`Surprise: ${p.name} mood, seed ${seed}.`);
 }
 
-export function setGlobal(patch: Partial<Pick<GardenState, "scale" | "bpm" | "reverb" | "drone" | "root">>) {
+export function setGlobal(patch: Partial<Pick<GardenState, "scale" | "bpm" | "reverb" | "drone" | "effects" | "root">>) {
   setGarden((s) => ({
     ...s,
     ...patch,

@@ -63,6 +63,9 @@ export default function HelpPanel() {
             <p>
               Press <strong className="font-medium text-paper-100">Begin</strong>. A soft hum fades in and a small tree grows: your first plant, already playing.
             </p>
+            <p className="mt-2">
+              This tree is one recursive function, <code className="font-mono text-paper-100">branch()</code>. Every branch is a call, and every call is a note; going deeper lifts the wind, coming back lets it settle.
+            </p>
           </Step>
 
           <Step n={2} title="Plant seeds">

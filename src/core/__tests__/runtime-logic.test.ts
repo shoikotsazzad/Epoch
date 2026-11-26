@@ -134,6 +134,8 @@ describe("garden helpers", () => {
 
   it("captions describe the music in words", () => {
     expect(noteCaption("bonsai", ev({ role: "push", depth: 3 }), undefined, "D4")).toBe("Bonsai: D4 · tension rising (depth 3)");
+    expect(noteCaption("bonsai", ev({ role: "push", depth: 3 }), undefined, "D4", true)).toBe("Bonsai: D4 · tension rising, wind swells (depth 3)");
+    expect(noteCaption("rain", ev({ role: "pulse", depth: 2 }), undefined, "A4", true)).toBe("Rain: droplet on a Cantor segment · A4 (level 2)");
     const r = growSunflower({ n: 5, seeds: 34, density: 0.5 }, mulberry32(1));
     expect(noteCaption("sunflower", ev({ role: "spark" }), r.trace[0], "A5")).toBe("Sunflower: fib(5) = 5 · A5");
   });

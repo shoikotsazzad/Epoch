@@ -131,6 +131,7 @@ export default function AdvancedDrawer() {
           <LiveSlider label="Tempo" value={Math.round(garden.bpm)} min={BPM_RANGE.min} max={BPM_RANGE.max} step={1} format={(v) => `${v} bpm`} onCommit={(v) => setGlobal({ bpm: v })} />
           <LiveSlider label="Reverb" value={Math.round(garden.reverb * 100)} min={0} max={100} step={1} format={(v) => `${v}%`} onCommit={(v) => setGlobal({ reverb: v / 100 })} />
           <LiveSlider label="Drone" value={Math.round(garden.drone * 100)} min={0} max={100} step={1} format={(v) => `${v}%`} onCommit={(v) => setGlobal({ drone: v / 100 })} />
+          <LiveSlider label="Sound effects" value={Math.round(garden.effects * 100)} min={0} max={100} step={1} format={(v) => (v === 0 ? "Off" : `${v}%`)} onCommit={(v) => setGlobal({ effects: v / 100 })} />
         </div>
 
         <h3 className="drawer-h">Mood</h3>

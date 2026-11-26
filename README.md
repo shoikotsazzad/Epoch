@@ -1,43 +1,126 @@
 # Stack Garden
 
-**A garden of four recursive functions. Plant seeds, listen to them grow.**
+**A recursive tree that sings.**
 
-Stack Garden is a calm, top-down Japanese stone garden at night. Each plant is a different **recursive function**, and each one plays one layer of an ever-changing ambient piece. Press **X** at any time to freeze time and *see and hear the call stack*.
+Stack Garden is a calm, interactive soundscape that runs in your web browser. It is a quiet Japanese stone garden at night. In the middle stands a small bonsai, and that bonsai is a **recursive function**: a piece of code that calls itself. Every time it calls itself, a branch grows and a note plays. You shape the function, the tree changes, and so does the music.
 
-Built for **Hub's Quest Epoch 1, Recursive Soundscapes** (UIU Developers Hub).
+You can let it play in the background while you work, read or fall asleep. Or you can lean in, plant more, and watch how the mathematics turns into sound. Every garden is yours alone, and you can save its music as an audio file.
 
-> Headphones recommended. On iPhone, switch the ring/silent switch to ring: iOS mutes Web Audio in silent mode.
+> Headphones recommended. On iPhone, switch the ring/silent switch to ring: iOS mutes web audio in silent mode.
 
 ---
 
-## The four recursions, and how they become music
+## Why it exists
 
-| Plant | Recursion | Musical role | How the recursion maps to sound | Visual |
+Most people never get to *feel* mathematics. Recursion, a function that solves a problem by calling a smaller copy of itself, is usually taught with diagrams and stack traces. In Stack Garden you can **hear** it: deeper calls climb higher and build tension, and returning calls resolve back home. You can **see** it: the tree grows one call at a time. And you can **step through it**: X-ray mode freezes time and walks the real call stack, note by note.
+
+At the same time, it is simply a place to breathe. No accounts, no ads, no feeds, no notifications. You open it, a hum fades in, and a tree starts to sing.
+
+## How it can help
+
+- **Relax and unwind.** Slow, soft music that never repeats exactly and never gets busy. There's also a breathing guide that moves with the music.
+- **Fall asleep.** A sleep timer slowly winds the volume and tempo down, then goes quiet. The *Deep Sleep* mood is low, slow and minor.
+- **Focus.** Gentle background sound for studying or working, without lyrics or sudden changes. Leave it alone and it keeps evolving on its own.
+- **Learn recursion.** Students and teachers can change depth or branching and immediately see and hear the result, then use X-ray mode to step through every call.
+- **Create without skill.** You don't need to play an instrument or read music. Everything stays in key, so whatever you do sounds pleasant.
+- **Keep and share it.** Export your garden as WAV or MP3 for meditation, a video, a podcast intro or a playlist. A share link reopens the exact same garden for someone else.
+- **Inclusive by design.** It works fully from the keyboard, captions describe the music for people who can't hear it, it respects reduced-motion settings, and it works on phones.
+- **Private.** Nothing is uploaded, nothing is tracked and nothing is saved between visits. It all runs in your browser.
+
+---
+
+## What makes it special
+
+- **The music *is* the algorithm.** No note is placed by hand. Every pitch, rhythm, chord and sound effect comes from what the recursion does: entering a call, returning from one, reaching a base case, or skipping a gap.
+- **You can see and hear the call stack.** Press **X** and time freezes. Step forward and back through the recursion; each call lights up its branch and plays its own note.
+- **Sound effects that follow the recursion.** The wind swells as the tree goes deeper and settles as it returns. Rain drips only on the parts of the Cantor set that survive, so you hear the gaps as silence.
+- **It almost never repeats.** Each plant loops at a different length (29, 17, 23 and 37 seconds). Those numbers share no common factors, so the full pattern comes back only after about 117 hours.
+- **Same seed, same music.** One number (the seed) drives every random choice, so a garden always sounds the same, live, in the exported file, and when opened from a share link.
+- **Always in key, never harsh.** Notes are stored as positions in a scale, never as raw frequencies, and a density limiter keeps the whole garden at no more than a few notes per second.
+
+---
+
+## The garden
+
+### The heart: the bonsai, `branch()`
+
+Every visit starts with only the bonsai. It's a fractal tree: `branch(depth, angle, length, degree)` draws one branch, then calls itself for each smaller branch until it reaches the leaves.
+
+| What the recursion does | What you hear | What you see |
+|---|---|---|
+| Each call | One note | One branch grows |
+| Depth (how many calls deep) | Pitch: the trunk is low, the leaves are two octaves higher; deeper notes are also softer and shorter | Thinner, shorter branches |
+| Entering a deeper call (*push*) | Tension: the melody steps away from home, the tone brightens, the wind swells | The branch being called glows amber |
+| Returning from a call (*pop*) | Release: big limbs end on a cadence back home, the wind settles | |
+| Reaching the base case (a leaf) | Sometimes a soft bell | A leaf |
+| Branch angle | Left or right in the stereo field | The tree's shape |
+
+You can change **Depth**, **Spread**, **Wind**, **Branches**, **Length decay** and **Prune** while it plays.
+
+### Three more layers you can plant
+
+If you want more, you can plant the same idea (a function that calls itself) in three other forms. Each one adds a different part of the music.
+
+| Plant | Recursion | Musical role | How it becomes sound | What you see |
 |---|---|---|---|---|
-| **Bonsai** | Fractal tree, `branch(depth, angle, length, degree)` | **Melody** | Every call is a note. **Depth sets register** (trunk ≈ the tonic in octave 3, leaves two octaves up), loudness (−3 dB per level) and length. **Push = tension**: each child moves one scale step away from home and opens the filter a little. **Pop = release**: big limbs end with a cadence to degree 0 / 4. Sibling branches take different **chord tones** (never adjacent steps). Leaves (base case) ring as soft bells ~40% of the time. Branch angle sets pan. | Ink-brush tree that grows call by call; the branch being called glows lantern-amber |
-| **Rain** | Cantor set, `cantor(start, length, level)` | **Rhythm** | Keep the two outer parts, drop the middle ("Silence" slider = how much). Surviving segments at the deepest level become soft drops, and **the gaps are rests**. The left/right path through the recursion picks the pitch, and deeper means shorter and higher. Level 0 is a quiet sustained tone. Drops snap to a half-beat grid, so Cantor dust stays sparse. | Bars splitting into thirds; drops fall and ripple into the sand |
-| **Stones** | Sierpinski triangle, `sierpinski(triangle, level, path)` | **Harmony** (3-voice canon) | The **three corners are three voices** (root, fifth, octave). The **order of subdivision** (top = stay, left = up, right = down) is the melody. Every voice plays the same line, delayed by the canon delay. Slow FM pads; below C3 only roots and fifths. | A triangle of stones subdividing; each corner stone warms when its voice sings |
-| **Sunflower** | Fibonacci, genuinely recursive `fib(n)` **with memoization** | **Sparkle** | Calls drive time **in the order they finish**. Each computed `fib(k)` becomes a high bell on scale degree `fib(k) mod scaleLength` (probability = "Sparkle"). **Memo hits** are recorded and ring as softer echoes. | Seeds on the golden-angle spiral (137.508°, r = c·√i); seed `fib(k)` lights up when `fib(k)` returns |
+| **Rain** | Cantor set, `cantor(start, length, level)` | **Rhythm** | Keep the two outer thirds, drop the middle, repeat. Surviving segments become soft drops and the **gaps are rests**. The left/right path through the recursion picks the pitch; deeper means shorter and higher. | Bamboo-like bars splitting into thirds; drops fall into the sand |
+| **Stones** | Sierpinski triangle, `sierpinski(triangle, level, path)` | **Harmony** | The **three corners are three voices** (root, fifth, octave). The order of subdivision is the melody, and all three voices sing it as a slow canon, each one a few beats behind the last. | A triangle of stones subdividing; each corner stone warms when its voice sings |
+| **Sunflower** | Fibonacci, a truly recursive `fib(n)` **with memoization** | **Sparkle** | Each computed `fib(k)` rings a high bell, in the order the calls finish. **Memo hits** (results reused from the cache) ring as softer echoes. | Seeds on the golden-angle spiral; seed `fib(k)` lights up when `fib(k)` returns |
 
-**Phasing (Brian Eno, *Music for Airports*).** Each plant loops on its own cycle: Bonsai 29 s, Rain 17 s, Stones 23 s, Sunflower 37 s. These lengths are pairwise coprime, so the full combination repeats only after about **117 hours**.
+### Sound effects from the recursion
 
-**Everything is seeded.** One seed (mulberry32) drives every random choice, so the same seed always gives the same garden and the same music, live and in the exported file.
+A quiet layer of generated sounds (no recordings) is triggered by the recursion's own steps:
 
-**One shared contract.** Every recursion is a pure function returning `{ events, trace, lengthBeats, geometry }`. That same result drives the audio, the drawing, X-ray mode and the export. Notes are stored as **scale degrees**, never frequencies, so nothing can ever go out of key.
+| Plant | Effect | What triggers it |
+|---|---|---|
+| Bonsai | Soft **wind** | Every call: a push one level deeper swells and brightens it, a pop lets it settle. The **Wind** slider sets how much. |
+| Rain | **Droplets** | Every surviving Cantor segment. The removed thirds stay silent. |
+| Stones | A soft **stone click** | The moment each canon voice comes in. |
+
+The effects come from where their plant sits, mute and disappear with it, are included in exports, and have their own **Sound effects** slider in Settings.
+
+### Underneath it all
+
+A low **drone** (the home note and its fifth) breathes slowly under the garden, and a long **reverb** gives everything space. Where you place a plant matters: left sounds left, and plants near the edge sound farther away.
+
+---
+
+## Features
+
+**Create**
+- Plant up to four kinds of recursive plants by dragging, clicking or pressing `1`–`4`
+- Change each plant's recursion live with sliders; the tree regrows and the music follows
+- Five moods: *Dawn*, *Rain Garden*, *Night*, *Floating* and *Deep Sleep*. Each changes scale, tempo, colours, reverb, drone and sound effects and keeps your plants; *Start fresh* returns to a single bonsai
+- Global controls for key, scale, tempo, reverb, drone, sound effects and volume
+- New seed, or *Surprise me* for a fresh garden
+
+**Listen and relax**
+- Music that keeps evolving: leave it alone for 30 seconds and your plants slowly grow or re-seed on their own
+- Breathing guide (in 4 s, out 6 s), timed to the music
+- Sleep timer (5, 10 or 20 minutes) that winds down gently; on desktop the countdown shows in the top bar
+- Captions describing the music, one line at a time
+
+**Understand**
+- **X-ray mode**: freeze time and step through the real call stack, with every call highlighted and played
+- A short illustrated *How to use* guide for first-time visitors (`H`)
+
+**Keep and share**
+- Export 1, 3 or 5 minutes as **WAV** or **MP3**, rendered faster than real time
+- Record a live session straight from the browser
+- Copy a share link that reopens your exact garden
 
 ---
 
 ## Using it
 
-New here? Press **How to use** in the top bar (on narrow screens it's inside **Settings**) or press `H` for a short illustrated guide.
+1. Press **Begin**. A soft hum fades in and the bonsai starts to grow and sing.
+2. **Tune** it: click the bonsai (or Tab to it and press Enter) and move its sliders.
+3. **Plant** more if you like: drag a seed from the tray into the sand, click a seed, or press `1`–`4`.
+4. **Listen**. Pick a mood, turn on the breathing guide, or set a sleep timer.
+5. **Look inside**: press `X` and use `←` `→` to walk through the call stack.
+6. **Keep it**: use the download icon in the top bar to export WAV or MP3.
 
-1. **Begin** unlocks audio. The drone fades in and the bonsai grows.
-2. **Plant**: drag a seed from the tray into the sand, click a seed, or press `1`–`4`.
-3. **Tune**: click a plant (or Tab to it and press Enter) to change its recursion live.
-4. **Listen** while plants phase against each other. Leave it alone for 30 s and your plants keep growing on their own (like Eno's *Bloom*).
-5. **Export** a 1, 3 or 5-minute WAV or MP3, or record the live session (the download icon in the top bar, on phones too).
-
-Tapping empty sand or the **Stack Garden** logo/title closes every open panel (and leaves X-ray); planting a seed also starts from a clean screen.
+Tapping empty sand or the **Stack Garden** logo closes any open panel. Every visit starts fresh with a single bonsai; nothing is saved unless you export it or copy a share link.
 
 ### Keyboard shortcuts
 
@@ -47,60 +130,96 @@ Tapping empty sand or the **Stack Garden** logo/title closes every open panel (a
 | `1` – `4` | Plant bonsai, rain, stones, sunflower |
 | `Tab` / `Shift+Tab` | Move between controls and plants |
 | `Enter` | Open the focused plant's panel |
-| Arrows | Nudge the selected plant (Shift = bigger steps) |
+| Arrows | Move the selected plant (Shift = bigger steps) |
 | `Delete` | Remove the selected plant |
 | `M` | Mute / unmute the selected plant |
 | `X` | **X-ray call stack**: `←` `→` step, `Home` / `End` jump, `[` `]` switch plant, `X` / `Esc` resume |
-| `B` | Breathing guide (in 4 s, out 6 s) |
-| `E` | Export dialog |
+| `B` | Breathing guide |
+| `E` | Export |
 | `R` | New seed |
-| `H` | How to use (guide for new visitors) |
+| `H` | How to use |
 | `?` | Shortcut sheet |
 | `Esc` | Close panels |
 
-### Calm features
-- **Moods** (the Mood menu in the top bar): Dawn, Rain Garden, Night (default), Floating (Lydian), Deep Sleep (minor pentatonic, low, tempo glides 48 → 40), plus *Start fresh*. A mood changes scale, tempo, colours, reverb and drone and keeps your plants; *Start fresh* takes you back to the beginning: Night, one bonsai and a new seed. The menu is keyboard accessible (↑/↓, Enter, Esc) and always opens inside the page.
-- **Breathing guide** synced to the music clock.
-- **Idle evolve**: after 30 s untouched, your plants slowly grow a level or re-seed (it never adds plants: that's yours to do).
-- **Sleep timer**: 5 / 10 / 20 min. In the last minute the volume and tempo wind down, then it offers *Save this session*.
-- **Fresh start**: every visit begins with a single bonsai playing its melody; you plant the rest.
-- **Share link**: *Copy share link* puts the whole garden in the URL hash; opening it restores that garden.
-
 ### Special URLs
-- `?demo=1`: fixed seed 4821, Night mood, all four plants (for the demo video; nothing is saved).
-- `?debug=1`: raw recursion debug view (geometry and piano roll for each recursion).
+- `?demo=1`: a fixed garden with all four plants (seed 4821, Night mood).
+- `?debug=1`: a raw view of each recursion's geometry and notes.
 
 ---
 
-## Logo
+## How it's built
 
-The master artwork is **`public/logo.jpeg`**: a tree inside a raked-sand ensō, with one glowing tip ("the note playing now"). Every other brand asset is cropped and resized from it:
+### Architecture
 
-```bash
-npm run logo   # rebuilds the assets below from public/logo.jpeg
+```
+recursion (pure function) ──► { events, trace, geometry }
+                                   │        │        │
+                                   ▼        ▼        ▼
+                                 audio    X-ray    drawing
+                                   │
+                                   ▼
+                          live playback  =  exported file
 ```
 
-| File | What |
-|---|---|
-| `src/assets/logo-mark-256.png` | round mark used in the header and on the Begin screen |
-| `public/logo-mark.png` | 512 px round mark |
-| `src/app/favicon.ico`, `src/app/icon.png`, `src/app/apple-icon.png` | 32 px favicon, 192 px app icon, 180 px home-screen icon |
-| `public/og-image.png` | 1200×630 link preview (logo + wordmark + subtitle) |
-| `design/logo-preview.png` | the mark at 512 / 64 / 32 px |
+- **One shared result per plant.** Each recursion is a pure, seeded function that returns its notes (`events`), its call trace (`trace`, every call with its enter and exit time) and its shape (`geometry`). That same result drives the sound, the drawing, X-ray mode and the export, so they can never disagree.
+- **Audio and drawing live outside React.** The audio engine, the scheduler and the canvas renderer run on their own; React only draws the panels and controls, never once per note or per frame.
+- **Export uses the same engine.** The exact `buildEngine()` used for live playback runs again inside `Tone.Offline`, so the file you download sounds like what you heard.
+- **No server at all.** It's a static site: HTML, JavaScript and CSS. There are no API routes, no database and no tracking.
 
-Images are rendered with a locally installed Chrome (`CHROME_PATH` if it isn't in the default place). For absolute link-preview URLs, build with `NEXT_PUBLIC_SITE_URL=https://your-site`.
+### Sound
 
-## Run, test, build, deploy
+- All sound is **synthesized** with Tone.js: soft FM and sine voices, generated noise for the wind, small synths for droplets and stone clicks. There are no samples.
+- Notes are scale degrees, quantized at play time, so changing key or scale applies instantly and nothing goes out of key. Very low notes are limited to roots and fifths, and nothing plays above D6.
+- Loops are timed in transport ticks, so changing the tempo stretches every loop smoothly. Small seeded timing and velocity variations keep it feeling human.
+- A density limiter, a per-plant voice limit, a master low-pass, a long reverb and a −1 dB limiter keep the mix calm and safe.
+- MP3 encoding runs in a **Web Worker**, so the page stays smooth while it encodes.
+
+### Visuals
+
+- A single **Canvas 2D** loop (`requestAnimationFrame`), sharp on high-density screens, with the raked sand cached as a background layer.
+- Plants are drawn procedurally from their recursion's geometry: an ink-brush bonsai, bamboo-like rain, stones and a golden-angle sunflower.
+- Ripples appear only when notes play; the branch, stone or seed being called glows.
+- A small, consistent design system ("Moonlit ink"): dark ink tones, warm lantern amber, sea-glass accents. See [`design/DESIGN.md`](design/DESIGN.md).
+
+### Tech stack
+
+- **Next.js 16** (App Router, TypeScript, static export) and **React 19**
+- **Tailwind CSS 4** (design tokens in `@theme`, mirrored in `src/visual/tokens.ts` and checked by a test)
+- **Tone.js 15** for synthesis, timing and offline rendering
+- **Framer Motion** for panel transitions (respects reduced motion)
+- **@breezystack/lamejs** for MP3 encoding
+- **Vitest** for the logic (76 tests)
+
+### Project structure
+
+```
+src/
+  core/        pure logic: types, seeded rng, scales, params, moods, share links, density, X-ray, effects, captions
+    recursions/  tree.ts  cantor.ts  sierpinski.ts  fibonacci.ts
+  audio/       engine.ts (master chain + drone), voices.ts (plant voices + effects), scheduler.ts, offline.ts (export)
+  visual/      renderer.ts, sand.ts, particles.ts, plants/*.ts, tokens.ts, layout.ts
+  export/      wav.ts, mp3.worker.ts, mp3.ts, recorder.ts, download.ts
+  runtime/     runtime.ts (connects state, audio and drawing)
+  state/       store.ts (tiny external store), actions.ts
+  components/  React UI: top bar, panels, seed tray, X-ray, export, captions
+design/        DESIGN.md (design system and final sound settings), REFERENCES.md
+scripts/       generate-logo.ts (builds every icon and preview image from the logo)
+ai-log/        development log: every prompt and response
+```
+
+---
+
+## Run it yourself
 
 ```bash
 npm install
 npm run dev        # http://localhost:3000
-npm run test       # Vitest: 68 tests of the recursion, music and export logic
+npm run test       # 76 tests of the recursion, music and export logic
 npm run lint
-npm run build      # static export into ./out (no server needed)
+npm run build      # static site in ./out (no server needed)
 ```
 
-**Vercel:** import the repository. The framework preset (Next.js) builds the static export automatically.
+**Vercel:** import the repository; the Next.js preset builds the static site automatically.
 
 **GitHub Pages:** build with your repository name as the base path and publish `out/`:
 
@@ -109,79 +228,56 @@ BASE_PATH=/your-repo-name npm run build
 touch out/.nojekyll   # so Pages serves the _next/ folder
 ```
 
-(For a `username.github.io` user site, plain `npm run build` is enough.)
-
-Any static host works: it's just HTML, JS and CSS. There are no API routes, no server actions and no database.
-
----
-
-## Tech stack
-
-- **Next.js 16** (App Router, TypeScript, `output: 'export'`), **React 19**
-- **Tailwind CSS 4** (design tokens in `@theme`, mirrored in `src/visual/tokens.ts` and checked by a test)
-- **Tone.js 15** for all audio: synthesis, transport, `Tone.Offline` export
-- **Canvas 2D**: one `requestAnimationFrame` loop, devicePixelRatio-aware, cached sand layer
-- **Framer Motion** for panel transitions (respects reduced motion)
-- **@breezystack/lamejs** for MP3, running in a **Web Worker**
-- **Vitest** for the pure logic
-
-```
-src/
-  core/        pure logic: types, rng, scales, params, presets, urlState, density, xray, garden, captions
-    recursions/  tree.ts  cantor.ts  sierpinski.ts  fibonacci.ts
-  audio/       engine.ts (master chain + drone), voices.ts, scheduler.ts (Tone.Part loops), offline.ts (export)
-  visual/      renderer.ts (rAF loop), sand.ts, particles.ts, plants/*.ts, tokens.ts, layout.ts
-  export/      wav.ts, mp3.worker.ts, mp3.ts, recorder.ts, download.ts
-  runtime/     runtime.ts (glue between stores, audio and renderer)
-  state/       store.ts (tiny external store), actions.ts
-  components/  React UI (panels, tray, X-ray, export, captions …)
-design/        REFERENCES.md, DESIGN.md (design system + final sound settings)
-ai-log/        every prompt and response (hackathon rule)
-```
-
-The audio engine, scheduler and renderer live **outside React**. React only renders panels and controls, never per note or per frame. The **same `buildEngine()`** is used live and inside `Tone.Offline`, so exports sound like what you heard.
+(For a `username.github.io` site, plain `npm run build` is enough.) Any static host works. For absolute link-preview URLs, build with `NEXT_PUBLIC_SITE_URL=https://your-site`.
 
 ---
 
 ## Accessibility
 
-- Full keyboard control (see shortcuts) with visible focus rings; plants are real focusable buttons.
-- Native `<button>`, `<input type="range">` with `<label>`, `role="switch"`/`radiogroup` where appropriate.
-- `prefers-reduced-motion` respected, plus an in-app **Reduce motion** toggle (no sway, particles or ripples).
-- **Captions**: a visible caption strip and an `aria-live` region describing the music ("Bonsai: D4 · tension rising · Rain: rest · Stones: 3-voice canon"), at most every 2 s.
-- The canvas has `role="img"` with a live garden summary. X-ray announces each step.
-- Text contrast ≥ 4.5:1 and UI ≥ 3:1 (checked by unit tests on the palette). State is never shown by colour alone (dashed selection ring, "muted" tag, "memo" tag).
-- Touch targets ≥ 44 px. Works on a phone in portrait (panels become bottom sheets).
-- Volume safety: gentle fade-in, master volume, limiter at −1 dB.
-- Lighthouse (static build): **Accessibility 100**, **Best Practices 100**.
+- Full keyboard control with visible focus rings; plants are real, focusable buttons.
+- Native buttons, labelled sliders, and proper switch and radio-group roles.
+- Honors `prefers-reduced-motion`, plus an in-app **Reduce motion** toggle (no sway, particles or ripples).
+- **Captions**: a visible caption line and a screen-reader live region describe the music ("Bonsai: D4 · tension rising, wind swells"), updated at most every 2 seconds.
+- The garden canvas has a live text summary, and X-ray mode announces each step.
+- Text contrast of at least 4.5:1 (checked by tests); state is never shown by colour alone.
+- Touch targets of at least 44 px; on phones, panels become sheets that never cover the seed tray.
+- Volume safety: gentle fade-in, a master volume control and a limiter.
+- Lighthouse: **Accessibility 100**, **Best Practices 100**. axe: no violations.
 
-## Browser notes
-- **Chrome / Edge**: everything, including session recording (`.webm`).
+## Browser support
+
+- **Chrome / Edge**: everything, including live recording (`.webm`).
 - **Firefox**: everything; recording as `.ogg` / `.webm`.
-- **Safari (macOS / iOS)**: everything; recording as `.m4a` where supported. On iOS the ring/silent switch mutes Web Audio.
-- Export renders faster than real time (about 3× on a laptop); a 5-minute render takes roughly a minute or two.
+- **Safari (macOS / iOS)**: everything; recording as `.m4a` where supported. On iPhone, the silent switch mutes web audio.
+- Export renders faster than real time; a 5-minute file takes about a minute or two on a laptop.
+
+---
+
+## Logo
+
+The master artwork is [`public/logo.jpeg`](public/logo.jpeg): a tree inside a raked-sand circle (an ensō), with one glowing branch tip, "the note playing now". Every icon and preview image is generated from it:
+
+```bash
+npm run logo
+```
+
+| File | What |
+|---|---|
+| `src/assets/logo-mark-256.png` | round mark used in the header and on the Begin screen |
+| `public/logo-mark.png` | 512 px round mark |
+| `src/app/favicon.ico`, `src/app/icon.png`, `src/app/apple-icon.png` | favicon, app icon, home-screen icon |
+| `public/og-image.png` | 1200×630 link preview |
+| `design/logo-preview.png` | the mark at 512, 64 and 32 px |
+
+The images are rendered with a locally installed Chrome (set `CHROME_PATH` if it isn't in the default place).
 
 ---
 
 ## Credits
 
 - Sound: **Tone.js** (MIT). All sound is synthesized; there are no samples.
-- Visuals: drawn procedurally in code; there are no images.
-- Fonts: **Cormorant Garamond** and **Manrope** (SIL Open Font License) via Google Fonts / `next/font`.
+- Visuals: the garden is drawn in code; the only image is the logo.
+- Fonts: **Cormorant Garamond** and **Manrope** (SIL Open Font License), bundled with `next/font`.
 - MP3 encoding: **lamejs** (`@breezystack/lamejs` fork, LGPL).
-- Inspiration: Brian Eno's *Music for Airports* (phasing loops) and *Bloom* (a garden that keeps playing), Japanese karesansui gardens, sumi-e ink painting.
-- Built with the help of an AI coding agent. Every prompt and response is in [`ai-log/`](ai-log/).
-
----
-
-## Hackathon checklist
-
-| Requirement / rubric | Where |
-|---|---|
-| Recursive algorithm with user-changeable parameters | `src/core/recursions/*`; plant panel sliders (depth, spread, wind, levels, silence, canon delay, voicing, n, sparkle …) |
-| Interactive simulation / visualization | Canvas garden: plants grow call by call, glows on notes, ripples, X-ray call stack |
-| Procedural music from the recursion | `src/audio/*`; mapping table above |
-| UI with parameter controls and playback | Top bar (mood, play/pause, export, more), plant panel, settings drawer |
-| Audio export | Export dialog: WAV (16-bit), MP3 (worker), session recording |
-| Polished, accessible, relaxing | Moods, breathing guide, idle evolve, sleep timer, captions, reduced motion, keyboard, Lighthouse a11y 100 |
-| Creative use of recursion | Four different recursions phasing together; X-ray "see and hear the call stack"; memo hits audible |
+- Inspiration: Brian Eno's *Music for Airports* (loops of different lengths) and *Bloom* (a garden that keeps playing), Japanese karesansui gardens and sumi-e ink painting.
+- Built with the help of an AI coding agent; every prompt and response is in [`ai-log/`](ai-log/).

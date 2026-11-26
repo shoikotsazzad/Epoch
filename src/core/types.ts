@@ -171,5 +171,6 @@ export interface GardenState {
   bpm: number;
   reverb: number; // 0..1 wet
   drone: number; // 0..1
+  effects: number; // 0..1 sound effects from the recursion (wind, droplets, stone clicks)
   plants: Plant[];
 }
