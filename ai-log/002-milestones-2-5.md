@@ -7,7 +7,47 @@
 ## Prompt (verbatim)
 
 ````text
+Continue the build from Milestone 2 through Milestone 5 in one continuous run,
+following STACK_GARDEN_PROMPT.md (now named Rootnote, if the rename is done).
 
+Working mode:
+- Work autonomously. Don't stop to ask me questions or wait for my "go" between
+  milestones. When a decision is needed, choose the option that best serves the
+  rubric (relaxation & UX 35%, musical quality 25%, recursion 15%) and note the
+  decision and the reason in PROGRESS.md.
+- Fix errors yourself. After each milestone, run `npm run lint`, `npm run test` and
+  `npm run build`, and fix every error and warning before moving on.
+- If something is truly blocked (e.g. a dependency that won't install), use the
+  simplest working alternative, record it, and keep going.
+
+Progress tracking:
+- Create a task list (your todo/checklist tool) with every task from Milestones 2–5,
+  and keep it updated as you work so I can see what's done, in progress and pending.
+- Keep a PROGRESS.md at the project root with:
+  - a progress bar per milestone, e.g. `M2 ██████████ 100%`, `M3 ██████░░░░ 60%`
+  - checkboxes for each task ([x] done, [ ] not done)
+  - decisions made, known issues, and what I should test
+  Update it at the end of every milestone. If the session gets interrupted,
+  PROGRESS.md must be enough to resume exactly where you stopped.
+
+Rules that still apply (from the brief):
+- Do NOT run git push, add remotes or commit. I handle git.
+- Never modify anything in "Reference images/".
+- Update ai-log/ for this prompt and at the end of each milestone (prompt verbatim,
+  your full reply, files changed).
+- Keep the polish bar high: finish each milestone working and polished before
+  starting the next one. If time or scope runs short, cut optional extras, never
+  the six mandatory deliverables.
+
+When everything is complete, give me a final report:
+1. The final PROGRESS.md progress bars
+2. A checklist mapping each of the 6 mandatory deliverables and each rubric item to
+   where it is in the app
+3. Exactly how to run, test and build (static export)
+4. Known issues or anything I should check by hand (audio on Safari/iOS,
+   mobile layout, export files)
+
+Start now with Milestone 2.
 ````
 
 ## Response

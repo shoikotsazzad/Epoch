@@ -7,7 +7,43 @@
 ## Prompt (verbatim)
 
 ````text
-tell me how to use this as a new user in plain english
+Add a "How to use" guide for new users, opened from the top navbar.
+
+Navbar button:
+- A "How to use" button (with a ? icon) in the top bar. If one already exists,
+  connect it to this new guide instead of adding a second one.
+- On mobile, show only the ? icon, with an aria-label of "How to use".
+- Keyboard shortcut: `?` opens it, Esc closes it.
+
+The guide:
+- A calm side panel (or a centered modal on mobile) in the DESIGN.md style:
+  dark panel, soft blur, slow fade-in (respecting reduced motion).
+- Plain, friendly English with no technical words, readable in under 1 minute.
+- Short sections, each with a small icon:
+  1. Begin: press Begin and put on headphones
+  2. Plant seeds: drag a seed or press 1–4; what each plant adds
+     (Bonsai = melody, Rain = rhythm, Stones = harmony, Sunflower = sparkle)
+  3. Shape the sound: click a plant to change it, mute it or remove it
+  4. Set the mood: presets, breathing guide, sleep timer
+  5. X-ray: press X to see the music being built step by step
+  6. Save & share: download WAV/MP3 or copy a share link
+  7. Keyboard shortcuts: a compact list
+- Only describe features that actually exist in the app right now.
+
+First-time users:
+- Open the guide automatically once, right after the user presses Begin
+  (or show a small "New here? See how it works" hint near the button).
+- Remember that it was seen (localStorage, wrapped in try/catch) so it doesn't
+  show again. It must not block the music or the garden, and closing it
+  should be one click.
+
+Accessibility:
+- role="dialog", aria-modal, a clear title, focus moves into the panel when it
+  opens and returns to the button when it closes, Tab stays inside while open,
+  text contrast ≥ 4.5:1, works fully with the keyboard.
+
+Check it on desktop and on mobile widths (375 px, 393 px) and tell me how to test it.
+Add this prompt and your reply to ai-log/.
 ````
 
 ## Response
