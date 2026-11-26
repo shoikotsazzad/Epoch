@@ -37,6 +37,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: "#0b1012",
   colorScheme: "dark",
+  viewportFit: "cover", // lets the phone layout respect notches / home indicator
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,37 +1,53 @@
 /**
- * Generates every Stack Garden logo asset from the recursive branch() in
- * src/brand/logo.ts. The logo is literally drawn by recursion.
+ * Builds every Stack Garden brand asset from the master artwork public/logo.jpeg
+ * (a tree inside a raked-sand ensō, one glowing tip).
  *
  *   npm run logo
  *
- * Outputs
- *   public/logo-mark.svg, public/logo-mark-light.svg      square mark (dark / light)
- *   public/logo-lockup.svg, public/logo-lockup-light.svg  mark + "Stack Garden" wordmark
- *   public/logo-favicon-32.svg, src/app/icon.svg          32 px favicon (depth 2, thicker strokes)
- *   src/app/favicon.ico                                   32 px PNG-in-ICO       (needs Chrome)
- *   public/og-image.png                                   1200×630 link preview  (needs Chrome)
- *   design/logo-preview.png                               mark at 512 / 64 / 32  (needs Chrome)
+ * Outputs (all cropped to the circle, so the mark fills each icon)
+ *   src/assets/logo-mark-256.png   header + Begin screen (imported by the app)
+ *   public/logo-mark.png           512 px mark for sharing / README
+ *   src/app/icon.png               192 px app icon
+ *   src/app/apple-icon.png         180 px home-screen icon
+ *   src/app/favicon.ico            32 px PNG-in-ICO
+ *   public/og-image.png            1200×630 link preview (logo + wordmark + subtitle)
+ *   design/logo-preview.png        the mark at 512 / 64 / 32 px for a legibility check
  *
- * No extra dependencies: fonts for the wordmark are subset from Google Fonts
- * (only the letters used) and embedded; PNGs are rendered with a locally
- * installed Chrome (CHROME_PATH, or the default macOS / Linux location).
+ * No extra dependencies: images are rendered with a locally installed Chrome
+ * (CHROME_PATH, or the default macOS / Linux location). The wordmark font is
+ * subset from Google Fonts (only the letters used) and embedded.
  */
 
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
-import { DARK_THEME, FAVICON_OPTIONS, LIGHT_THEME, SMALL_MARK_OPTIONS, markInner, markSvg, type LogoTheme } from "../src/brand/logo";
-import { color } from "../src/visual/tokens";
+import { dirname, join, resolve } from "node:path";
 
 const root = process.cwd();
 const out = (p: string) => resolve(root, p);
-const write = (p: string, data: string | Buffer) => {
-  writeFileSync(out(p), data);
-  console.log("  wrote", p);
-};
+const MASTER = out("public/logo.jpeg");
 
-// ---------------------------------------------------------------- fonts (subset + embed)
+// Where the ensō sits in the 1024 px master (measured: bright pixels span 172–852).
+const MASTER_SIZE = 1024;
+const CROP = 720; // square crop centred on the circle, ~20 px breathing room
+const CROP_OFFSET = (MASTER_SIZE - CROP) / 2;
+
+const INK950 = "#0b1012";
+const PAPER100 = "#e7e0d1";
+const PAPER300 = "#bdb5a5";
+const WORD = "Stack Garden";
+const SUB = "four recursions, one garden";
+
+function findChrome(): string | null {
+  const candidates = [
+    process.env.CHROME_PATH,
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/usr/bin/google-chrome",
+    "/usr/bin/chromium",
+    "/usr/bin/chromium-browser",
+  ].filter(Boolean) as string[];
+  return candidates.find((c) => existsSync(c)) ?? null;
+}
 
 async function fontDataUri(family: string, weight: number, text: string): Promise<string | null> {
   try {
@@ -47,161 +63,106 @@ async function fontDataUri(family: string, weight: number, text: string): Promis
   }
 }
 
-// ---------------------------------------------------------------- lockup
+const masterUri = () => `data:image/jpeg;base64,${readFileSync(MASTER).toString("base64")}`;
 
-const WORD = "Stack Garden";
-const SUB = "four recursions, one garden";
-
-function lockupSvg(theme: LogoTheme, serif: string | null, wordColor: string): string {
-  const H = 160;
-  const markSize = 160;
-  const textX = 188;
-  const textLen = 392; // fixed advance so the lockup is identical with any fallback font
-  const W = textX + textLen + 20;
-  const { svgInner } = markInner({ ...SMALL_MARK_OPTIONS, theme }); // the lockup is used small: optical size
-  const face = serif ? `@font-face{font-family:"SG Serif";src:url(${serif});font-weight:500}` : "";
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${WORD}"><title>${WORD}</title><style>${face}text{font-family:"SG Serif","Cormorant Garamond","Iowan Old Style",Georgia,serif;font-weight:500}</style><svg x="0" y="0" width="${markSize}" height="${markSize}" viewBox="0 0 512 512">${svgInner}</svg><text x="${textX}" y="${H / 2 + 24}" font-size="72" letter-spacing="1.8" textLength="${textLen}" lengthAdjust="spacing" fill="${wordColor}">${WORD}</text></svg>`;
+/** HTML that shows the circle crop of the master at exactly `size` px. */
+function cropImg(size: number, src: string, round = false): string {
+  const scale = size / CROP;
+  return `<div style="width:${size}px;height:${size}px;overflow:hidden;position:relative;background:${INK950};border-radius:${round ? "50%" : "0"}"><img src="${src}" style="position:absolute;left:${-CROP_OFFSET * scale}px;top:${-CROP_OFFSET * scale}px;width:${MASTER_SIZE * scale}px;height:${MASTER_SIZE * scale}px"></div>`;
 }
 
-// ---------------------------------------------------------------- Chrome rendering
+const page = (body: string, css = "", bg = INK950) =>
+  `<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:${bg}}${css}</style></head><body>${body}</body></html>`;
 
-function findChrome(): string | null {
-  const candidates = [
-    process.env.CHROME_PATH,
-    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    "/usr/bin/google-chrome",
-    "/usr/bin/chromium",
-    "/usr/bin/chromium-browser",
-  ].filter(Boolean) as string[];
-  return candidates.find((c) => existsSync(c)) ?? null;
-}
-
-function screenshot(chrome: string, html: string, w: number, h: number, dest: string) {
-  const dir = mkdtempSync(join(tmpdir(), "sg-logo-"));
+function shot(chrome: string, html: string, w: number, h: number, dest: string) {
+  const dir = mkdtempSync(join(tmpdir(), "sg-brand-"));
   const file = join(dir, "page.html");
   writeFileSync(file, html);
+  mkdirSync(dirname(out(dest)), { recursive: true });
   execFileSync(
     chrome,
-    [
-      "--headless=new",
-      "--disable-gpu",
-      "--hide-scrollbars",
-      "--force-device-scale-factor=1",
-      `--window-size=${w},${h}`,
-      "--virtual-time-budget=3000",
-      `--screenshot=${out(dest)}`,
-      `file://${file}`,
-    ],
+    ["--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1", "--default-background-color=00000000", `--window-size=${w},${h}`, "--virtual-time-budget=3000", `--screenshot=${out(dest)}`, `file://${file}`],
     { stdio: "ignore" },
   );
+  const png = readFileSync(out(dest));
+  const size = { w: png.readUInt32BE(16), h: png.readUInt32BE(20) };
+  if (size.w !== w || size.h !== h) console.warn(`  ! ${dest} came out ${size.w}×${size.h} (wanted ${w}×${h})`);
   console.log("  wrote", dest);
+  return png;
 }
-
-/** Read width/height from a PNG header. */
-const pngSize = (buf: Buffer) => ({ w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) });
 
 /** Wrap a PNG in a single-image .ico container (PNG-in-ICO is supported everywhere). */
 function pngToIco(png: Buffer): Buffer {
-  const { w, h } = pngSize(png);
-  const header = Buffer.alloc(6 + 16);
-  header.writeUInt16LE(0, 0); // reserved
-  header.writeUInt16LE(1, 2); // type: icon
-  header.writeUInt16LE(1, 4); // count
+  const w = png.readUInt32BE(16);
+  const h = png.readUInt32BE(20);
+  const header = Buffer.alloc(22);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(1, 4);
   header.writeUInt8(w >= 256 ? 0 : w, 6);
   header.writeUInt8(h >= 256 ? 0 : h, 7);
-  header.writeUInt8(0, 8); // palette
-  header.writeUInt8(0, 9); // reserved
-  header.writeUInt16LE(1, 10); // planes
-  header.writeUInt16LE(32, 12); // bpp
+  header.writeUInt16LE(1, 10);
+  header.writeUInt16LE(32, 12);
   header.writeUInt32LE(png.length, 14);
-  header.writeUInt32LE(22, 18); // offset
+  header.writeUInt32LE(22, 18);
   return Buffer.concat([header, png]);
 }
 
-const page = (body: string, bg: string, extraCss = "") =>
-  `<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:${bg}}${extraCss}</style></head><body>${body}</body></html>`;
-
-// ---------------------------------------------------------------- main
-
 async function main() {
-  console.log("Stack Garden logo: growing it with branch() …");
+  if (!existsSync(MASTER)) throw new Error("public/logo.jpeg (the master artwork) is missing");
+  const chrome = findChrome();
+  if (!chrome) throw new Error("Chrome not found: set CHROME_PATH to render the brand assets");
+  console.log("Stack Garden brand assets from public/logo.jpeg …");
+  const src = masterUri();
 
-  // 1. marks
-  write("public/logo-mark.svg", markSvg({ size: 512, theme: DARK_THEME }));
-  write("public/logo-mark-light.svg", markSvg({ size: 512, theme: LIGHT_THEME }));
-  write("public/logo-mark-small.svg", markSvg({ ...SMALL_MARK_OPTIONS, theme: DARK_THEME }));
-  const favicon = markSvg({ ...FAVICON_OPTIONS, theme: DARK_THEME });
-  write("public/logo-favicon-32.svg", favicon);
-  write("src/app/icon.svg", favicon);
+  // round marks with transparent corners (RGBA) for the app, favicon and icon;
+  // the Apple touch icon stays square and opaque, as iOS expects
+  for (const [size, dest, round] of [
+    [256, "src/assets/logo-mark-256.png", true],
+    [512, "public/logo-mark.png", true],
+    [192, "src/app/icon.png", true],
+    [180, "src/app/apple-icon.png", false],
+  ] as const) {
+    shot(chrome, page(cropImg(size, src, round), "", round ? "transparent" : INK950), size, size, dest);
+  }
 
-  // 2. lockups (wordmark font subset to just "Stack Garden")
+  const tmp = mkdtempSync(join(tmpdir(), "sg-ico-"));
+  const fav = shot(chrome, page(cropImg(32, src, true), "", "transparent"), 32, 32, join(tmp, "fav.png"));
+  if (fav[25] !== 6) throw new Error("favicon PNG must be RGBA");
+  writeFileSync(out("src/app/favicon.ico"), pngToIco(fav));
+  console.log("  wrote src/app/favicon.ico");
+
   const serif = await fontDataUri("Cormorant Garamond", 500, WORD);
   const sans = await fontDataUri("Manrope", 400, SUB);
-  if (!serif) console.warn("  (offline: wordmark falls back to system serif fonts)");
-  write("public/logo-lockup.svg", lockupSvg(DARK_THEME, serif, color.paper100));
-  write("public/logo-lockup-light.svg", lockupSvg(LIGHT_THEME, serif, color.ink800));
-
-  // 3. PNGs via Chrome
-  const chrome = findChrome();
-  if (!chrome) {
-    console.warn("  Chrome not found (set CHROME_PATH): skipped og-image.png, favicon.ico and the preview.");
-    return;
-  }
   const fonts = `${serif ? `@font-face{font-family:"SG Serif";src:url(${serif})}` : ""}${sans ? `@font-face{font-family:"SG Sans";src:url(${sans})}` : ""}`;
-  const lockupDark = readFileSync(out("public/logo-lockup.svg"), "utf8");
-
-  // og-image: dark background, centred lockup, subtitle
-  screenshot(
+  shot(
     chrome,
     page(
-      `<main><div class="lock">${lockupDark}</div><p>${SUB}</p></main>`,
-      color.ink950,
-      `${fonts}main{width:1200px;height:630px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px}
-       .lock svg{width:760px;height:auto;display:block}
-       p{margin:0;font:400 30px "SG Sans","Manrope",system-ui,sans-serif;letter-spacing:.06em;color:${color.paper300}}`,
+      `<main><div class="mark">${cropImg(300, src)}</div><div><h1>${WORD}</h1><p>${SUB}</p></div></main>`,
+      `${fonts}main{width:1200px;height:630px;display:flex;align-items:center;justify-content:center;gap:56px}
+       .mark>div{border-radius:50%}
+       h1{margin:0;font:500 96px "SG Serif","Cormorant Garamond",Georgia,serif;letter-spacing:.025em;color:${PAPER100}}
+       p{margin:14px 0 0 4px;font:400 30px "SG Sans","Manrope",system-ui,sans-serif;letter-spacing:.06em;color:${PAPER300}}`,
     ),
     1200,
     630,
     "public/og-image.png",
   );
 
-  // favicon.ico from the 32 px variant
-  const tmp = mkdtempSync(join(tmpdir(), "sg-ico-"));
-  const icoPng = join(tmp, "fav.png");
-  execFileSync(
-    chrome,
-    ["--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1", "--window-size=32,32", "--default-background-color=00000000", `--screenshot=${icoPng}`, `data:text/html,${encodeURIComponent(page(favicon.replace('width="32" height="32"', 'width="32" height="32" style="display:block"'), "transparent"))}`],
-    { stdio: "ignore" },
-  );
-  const png = readFileSync(icoPng);
-  const { w, h } = pngSize(png);
-  if (w === 32 && h === 32) write("src/app/favicon.ico", pngToIco(png));
-  else console.warn(`  favicon PNG came out ${w}×${h}; kept the SVG icon only.`);
-
-  // legibility preview: 512, 64, 32 px side by side, dark and light
-  const mark = (s: number, theme: LogoTheme) =>
-    (s <= 32 ? markSvg({ ...FAVICON_OPTIONS, theme }) : s <= 128 ? markSvg({ ...SMALL_MARK_OPTIONS, theme }) : markSvg({ size: 512, theme })).replace(
-      /width="\d+" height="\d+"/,
-      `width="${s}" height="${s}"`,
-    );
-  const cell = (s: number, label: string, svg: string) => `<figure><div class="m">${svg}</div><figcaption>${label}</figcaption></figure>`;
-  const row = (theme: LogoTheme, bg: string, fg: string, name: string) =>
-    `<section style="background:${bg};color:${fg}"><h2>${name}</h2><div class="row">${cell(512, "512 px", mark(512, theme))}${cell(64, "64 px (optical small)", mark(64, theme))}${cell(32, "32 px (favicon, depth 2)", mark(32, theme))}</div></section>`;
-  screenshot(
+  const cell = (s: number) => `<figure><div style="border-radius:50%;overflow:hidden;width:${s}px;height:${s}px">${cropImg(s, src)}</div><figcaption>${s} px</figcaption></figure>`;
+  shot(
     chrome,
     page(
-      row(DARK_THEME, color.ink950, color.paper300, "Dark") + row(LIGHT_THEME, color.paper100, color.ink800, "Light"),
-      color.ink950,
-      `section{padding:28px 36px}h2{margin:0 0 12px;font:500 16px system-ui;letter-spacing:.08em;text-transform:uppercase}
-       .row{display:flex;align-items:flex-end;gap:48px}figure{margin:0}figcaption{font:13px system-ui;margin-top:10px;opacity:.8}.m svg{display:block}`,
+      `<section><div class="row">${cell(512)}${cell(64)}${cell(32)}</div></section>`,
+      `section{padding:28px 36px;color:${PAPER300}}.row{display:flex;align-items:flex-end;gap:48px}figure{margin:0}figcaption{font:13px system-ui;margin-top:10px}`,
     ),
     760,
-    1260,
+    620,
     "design/logo-preview.png",
   );
 }
 
 main().catch((e) => {
-  console.error(e);
+  console.error(e instanceof Error ? e.message : e);
   process.exit(1);
 });

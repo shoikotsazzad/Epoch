@@ -60,9 +60,10 @@ export default function AdvancedDrawer() {
   return (
     <FadePanel
       show={show}
+      mobileFrom="top"
       label="Settings"
       id="menu-drawer"
-      className="fixed inset-x-3 bottom-3 z-30 max-h-[78dvh] overflow-y-auto sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-24 sm:w-[360px] sm:max-h-[calc(100dvh-8rem)]"
+      className="fixed inset-x-2 top-[64px] bottom-[calc(96px+env(safe-area-inset-bottom))] z-30 overflow-y-auto max-sm:bg-ink-900 sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-24 sm:w-[360px] sm:max-h-[calc(100dvh-8rem)]"
     >
       <div ref={ref}>
         <PanelHeader title="Settings" subtitle={gardenSummary(garden)} onClose={() => patchUi({ panel: null })} />
@@ -75,7 +76,7 @@ export default function AdvancedDrawer() {
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
-            className="btn-quiet flex items-center justify-center gap-2"
+            className="btn-quiet flex items-center justify-center gap-2 px-2 sm:px-[14px]"
             disabled={!started}
             onClick={() => {
               patchUi({ panel: null });

@@ -100,9 +100,11 @@ body {
     color: var(--color-sea-300);
     transition: background-color 400ms var(--ease-calm), color 400ms var(--ease-calm);
   }
+  @media (hover: hover) {
   .icon-btn:hover:not(:disabled) {
-    background: var(--color-ink-800);
-    color: var(--color-paper-100);
+      background: var(--color-ink-800);
+      color: var(--color-paper-100);
+    }
   }
   .icon-btn:disabled {
     opacity: 0.4;
@@ -122,9 +124,11 @@ body {
     letter-spacing: 0.02em;
     transition: background-color 500ms var(--ease-calm), color 500ms var(--ease-calm);
   }
+  @media (hover: hover) {
   .btn-primary:hover:not(:disabled) {
-    background: color-mix(in oklab, var(--color-lantern-400) 14%, transparent);
-    color: var(--color-lantern-200);
+      background: color-mix(in oklab, var(--color-lantern-400) 14%, transparent);
+      color: var(--color-lantern-200);
+    }
   }
   .btn-primary:disabled {
     opacity: 0.6;
@@ -139,10 +143,12 @@ body {
     font-size: 14px;
     transition: border-color 400ms var(--ease-calm), color 400ms var(--ease-calm), background-color 400ms var(--ease-calm);
   }
+  @media (hover: hover) {
   .btn-quiet:hover:not(:disabled) {
-    border-color: var(--color-sea-400);
-    color: var(--color-paper-100);
-    background: var(--color-ink-800);
+      border-color: var(--color-sea-400);
+      color: var(--color-paper-100);
+      background: var(--color-ink-800);
+    }
   }
   .btn-quiet:disabled {
     opacity: 0.45;
@@ -298,9 +304,11 @@ body {
     cursor: grab;
     transition: background-color 400ms var(--ease-calm), color 400ms var(--ease-calm);
   }
+  @media (hover: hover) {
   .seed-btn:hover:not(:disabled) {
-    background: var(--color-ink-800);
-    color: var(--color-lantern-400);
+      background: var(--color-ink-800);
+      color: var(--color-lantern-400);
+    }
   }
   .seed-btn:active {
     cursor: grabbing;
@@ -352,8 +360,10 @@ body {
     color: var(--color-paper-100);
     transition: border-color 400ms var(--ease-calm), background-color 400ms var(--ease-calm);
   }
+  @media (hover: hover) {
   .preset-btn:hover {
-    background: var(--color-ink-800);
+      background: var(--color-ink-800);
+    }
   }
   .preset-btn[aria-pressed="true"] {
     border-color: var(--color-lantern-400);

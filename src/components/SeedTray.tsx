@@ -57,7 +57,7 @@ export default function SeedTray() {
         ref={tray}
         role="toolbar"
         aria-label="Seed tray: plant a recursion"
-        className="pointer-events-auto flex items-stretch justify-center gap-1 rounded-[22px] border border-slate-700 bg-ink-900/70 p-1.5 backdrop-blur-[8px] sm:gap-2"
+        className="pointer-events-auto flex w-full items-stretch justify-between gap-1 rounded-[24px] sm:rounded-[22px] border border-slate-700 bg-ink-900/85 p-1.5 shadow-[0_12px_40px_rgb(0_0_0/0.4)] backdrop-blur-[10px] sm:w-auto sm:justify-center sm:gap-2 sm:bg-ink-900/70 sm:shadow-none sm:backdrop-blur-[8px]"
       >
         {SEEDS.map(({ kind, key, Glyph }) => (
           <button
@@ -79,7 +79,7 @@ export default function SeedTray() {
             }}
             aria-keyshortcuts={key}
             title={`Plant ${PLANT_LABELS[kind]} (${PLANT_RECURSION[kind]}). Shortcut ${key}`}
-            className="seed-btn"
+            className="seed-btn flex-1 sm:flex-none"
             style={{ touchAction: "none" }}
           >
             <span className="sr-only">Plant </span>

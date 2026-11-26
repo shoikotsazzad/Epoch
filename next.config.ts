@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
   // (it then also holds the export) so it never disturbs a running `next dev`.
   ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   images: { unoptimized: true },
+  // The floating "N" dev badge sat on top of the seed tray on phones.
+  devIndicators: false,
   turbopack: {
     rules: {
       "*.css": {

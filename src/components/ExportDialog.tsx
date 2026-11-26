@@ -98,7 +98,7 @@ export default function ExportDialog() {
       label="Export audio"
       id="export-dialog"
       from="top"
-      className="fixed inset-x-3 top-20 z-30 max-h-[calc(100dvh-6rem)] overflow-y-auto sm:inset-x-auto sm:right-6 sm:w-[380px]"
+      className="fixed inset-x-2 top-[64px] bottom-[calc(96px+env(safe-area-inset-bottom))] z-30 overflow-y-auto max-sm:bg-ink-900 sm:inset-x-auto sm:right-6 sm:top-20 sm:bottom-auto sm:w-[380px] sm:max-h-[calc(100dvh-6rem)]"
     >
       <div ref={ref}>
         <PanelHeader title="Export" subtitle="Download the composition your garden is making." onClose={() => patchUi({ panel: null })} />

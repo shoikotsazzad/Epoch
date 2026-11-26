@@ -6,6 +6,7 @@ import { DownloadIcon, PauseIcon, PlayIcon, SlidersIcon } from "./icons";
 import { IconButton } from "./ui";
 import MoodMenu from "./MoodMenu";
 import BrandMark from "./BrandMark";
+import { closeAll } from "@/state/actions";
 
 export default function TopBar() {
   const playing = useStore(uiStore, (s) => s.playing);
@@ -15,15 +16,28 @@ export default function TopBar() {
   const recording = useStore(uiStore, (s) => s.recording);
 
   return (
-    <header className="pointer-events-none fixed inset-x-0 top-0 z-20 flex items-start justify-between gap-3 p-4 sm:p-6">
-      <div className="pointer-events-auto flex select-none items-center gap-3">
-        <BrandMark size={36} className="shrink-0" />
-        <div>
-          <h1 className="whitespace-nowrap font-display text-xl font-medium leading-tight tracking-wide text-paper-300 sm:text-[28px]">Stack Garden</h1>
-          <p className="hidden whitespace-nowrap text-caption text-paper-300/90 sm:block">four recursions, one garden</p>
-        </div>
-      </div>
-      <nav aria-label="Main controls" className="pointer-events-auto flex shrink-0 items-center gap-1 sm:gap-2">
+    <header className="pointer-events-none fixed inset-x-0 top-0 z-20 flex items-center justify-between gap-3 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:items-start sm:p-6">
+      <h1 className="sr-only">Stack Garden</h1>
+      {/* home: logo + title close every open bar and leave X-ray */}
+      <button
+        type="button"
+        onClick={() => closeAll()}
+        aria-label="Stack Garden home: close open panels"
+        title="Stack Garden: back to the garden"
+        className="group pointer-events-auto flex min-w-0 select-none items-center gap-2.5 rounded-full pr-2 text-left sm:gap-3"
+      >
+        <BrandMark
+          size={36}
+          className="h-8 w-8 shrink-0 shadow-[0_0_0_1px_rgb(232_170_98/0.45),0_0_18px_rgb(232_170_98/0.35)] transition-shadow duration-500 group-hover:shadow-[0_0_0_1px_rgb(232_170_98/0.7),0_0_26px_rgb(232_170_98/0.5)] sm:h-9 sm:w-9"
+        />
+        <span className="min-w-0 max-[359px]:hidden">
+          <span className="block truncate whitespace-nowrap font-display text-[19px] font-medium leading-tight tracking-wide text-paper-100 sm:text-[28px] sm:text-paper-300 sm:transition-colors sm:duration-500 sm:group-hover:text-paper-100">
+            Stack Garden
+          </span>
+          <span className="hidden whitespace-nowrap text-caption text-paper-300/90 sm:block">four recursions, one garden</span>
+        </span>
+      </button>
+      <nav aria-label="Main controls" className="pointer-events-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
         {/* "How to use" lives in the top bar on wide screens, inside Settings below 768 px */}
         <button
           type="button"
@@ -42,13 +56,16 @@ export default function TopBar() {
           How to use
           {!helpSeen && <span className="sr-only"> (new here? start here)</span>}
         </button>
-        <MoodMenu />
+        {/* on phones Mood and Export live in Settings, keeping the bar calm */}
+        <div className="hidden sm:block">
+          <MoodMenu />
+        </div>
         <IconButton
           label={playing ? "Pause" : "Play"}
           shortcut="Space"
           disabled={!started}
           onClick={() => getRuntime().setPlaying(!playing)}
-          className="icon-btn-round"
+          className="icon-btn-round h-11 w-11 sm:h-12 sm:w-12"
         >
           {playing ? <PauseIcon /> : <PlayIcon />}
         </IconButton>
@@ -69,7 +86,7 @@ export default function TopBar() {
           aria-controls="menu-drawer"
           title="Settings: X-ray, breathing guide, sleep timer, sound, share link"
           onClick={() => patchUi({ panel: panel === "menu" ? null : "menu" })}
-          className={`inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full px-3 text-[14px] transition-colors duration-500 ease-calm ${
+          className={`inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-slate-700 px-2.5 text-[14px] sm:border-0 sm:px-3 transition-colors duration-500 ease-calm ${
             panel === "menu" ? "bg-ink-800 text-paper-100" : "text-sea-300 hover:bg-ink-800 hover:text-paper-100"
           }`}
         >

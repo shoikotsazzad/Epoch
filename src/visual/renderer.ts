@@ -279,14 +279,10 @@ export class Renderer {
     const alive: typeof this.drops = [];
     for (const d of this.drops) {
       const k = (t - d.t0) / d.dur;
-      if (k >= 1) {
-        if (this.ripples.length < MAX_RIPPLES)
-          this.ripples.push({ x: d.x, y: d.y1, r0: 1, t0: t, strength: Math.min(0.55, 0.25 + d.strength * 0.5), speed: 16, life: 0.9 });
-        continue;
-      }
+      if (k >= 1) continue; // drops simply sink into the sand (a landing ring read as a stray circle)
       alive.push(d);
       const y = d.y0 + (d.y1 - d.y0) * k * k; // gentle acceleration
-      ctx.fillStyle = withAlpha(color.paper100, 0.55 * (1 - k * 0.4));
+      ctx.fillStyle = withAlpha(color.paper100, 0.55 * (1 - k * k)); // fade out as it lands
       ctx.beginPath();
       ctx.ellipse(d.x, y, 1.4, 3.2, 0, 0, Math.PI * 2);
       ctx.fill();

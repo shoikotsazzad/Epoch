@@ -8,8 +8,19 @@ import { plantBounds, ringRadius } from "@/visual/layout";
 import { freshSeed } from "@/core/rng";
 import { BPM_RANGE } from "@/core/urlState";
 import { captionStore, gardenStore, patchUi, uiStore } from "./store";
+import { getRuntime } from "@/runtime/runtime";
 
 const setGarden = (fn: (g: GardenState) => GardenState) => gardenStore.set(fn);
+
+/**
+ * Close every open bar / panel (settings, help, export, mood, plant panel, shortcuts)
+ * and leave X-ray. Used by: tapping empty sand, the home logo/title, and planting.
+ */
+export function closeAll(opts: { keepSelection?: boolean } = {}) {
+  const ui = uiStore.get();
+  if (ui.xray) getRuntime().exitXray();
+  patchUi({ panel: null, ...(opts.keepSelection ? {} : { selectedId: null }) });
+}
 
 const aspect = () => (typeof window === "undefined" ? 1.6 : window.innerWidth / Math.max(1, window.innerHeight));
 
@@ -29,6 +40,7 @@ export function plantSeed(kind: PlantKind, at?: { x: number; y: number }): strin
   const radii = { self: ringRadius(kind, W, H) / H, of: (p: { kind: PlantKind }) => ringRadius(p.kind, W, H) / H };
   const spot = at ? clampToBounds(at.x, at.y, b) : findFreeSpot(g.plants, Math.random, aspect(), b, radii);
   const plant = makePlant(kind, spot.x, spot.y);
+  closeAll(); // planting always starts from a clean screen: whatever bar was open hides
   setGarden((s) => ({ ...s, plants: [...s.plants, plant] }));
   patchUi({ selectedId: plant.id });
   captionStore.set(`${PLANT_LABELS[kind]} planted. It fades in over a few seconds.`);

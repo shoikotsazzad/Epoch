@@ -7,7 +7,7 @@ import { decodeGarden } from "@/core/urlState";
 import { demoGarden, gardenSummary } from "@/core/garden";
 import { gardenFromPreset } from "@/core/presets";
 import type { PlantKind } from "@/core/types";
-import { cycleSelection, newSeed, nudgePlant, plantSeed, removePlant, toggleMute } from "@/state/actions";
+import { closeAll, cycleSelection, newSeed, nudgePlant, plantSeed, removePlant, toggleMute } from "@/state/actions";
 import { gardenStore, patchUi, uiStore, useStore } from "@/state/store";
 import { LEGACY_STORAGE_KEY, getRuntime, resetRuntime } from "@/runtime/runtime";
 import { useIdle } from "./hooks";
@@ -184,8 +184,8 @@ export default function Garden() {
         aria-label={summary}
         className={`absolute inset-0 h-full w-full ${dragKind ? "cursor-copy" : ""}`}
         onClick={(e) => {
-          // clicking empty sand deselects
-          if (e.target === e.currentTarget) patchUi({ selectedId: null, panel: uiStore.get().panel === "plant" ? null : uiStore.get().panel });
+          // tapping open sand closes every open bar and deselects
+          if (e.target === e.currentTarget) closeAll();
         }}
       />
       <p className="sr-only" aria-live="polite">
@@ -200,7 +200,7 @@ export default function Garden() {
       </div>
       <PlantOverlay />
       <div className={`transition-opacity duration-[800ms] ease-calm ${idle ? "opacity-20" : "opacity-100"}`}>
-        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex flex-col items-center gap-2 px-3 pb-3 sm:pb-5">
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex flex-col items-center gap-2 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:px-3 sm:pb-5">
           <Captions />
           <SeedTray />
         </div>

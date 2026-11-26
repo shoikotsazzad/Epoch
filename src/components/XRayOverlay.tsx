@@ -45,11 +45,13 @@ export default function XRayOverlay() {
   return (
     <FadePanel
       show={xray}
+      mobileFrom="bottom"
       label="X-ray call stack"
       id="xray-panel"
-      className="fixed inset-x-3 bottom-3 z-30 max-h-[62dvh] overflow-y-auto sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-24 sm:w-[380px] sm:max-h-[calc(100dvh-8rem)]"
+      className="fixed inset-x-2 bottom-[calc(96px+env(safe-area-inset-bottom))] z-30 max-h-[56dvh] overflow-y-auto max-sm:bg-ink-900 sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-24 sm:w-[380px] sm:max-h-[calc(100dvh-8rem)]"
     >
       <div ref={panelRef}>
+        <div aria-hidden className="mx-auto -mt-1.5 mb-3 h-1 w-10 rounded-full bg-slate-600 sm:hidden" />
         <PanelHeader
           title="X-ray: call stack"
           subtitle="Time is frozen. Step through the recursion and hear each call."

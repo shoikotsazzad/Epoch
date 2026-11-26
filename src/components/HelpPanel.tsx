@@ -50,9 +50,10 @@ export default function HelpPanel() {
   return (
     <FadePanel
       show={show}
+      mobileFrom="top"
       label="How to use Stack Garden"
       id="help-panel"
-      className="fixed inset-x-3 bottom-3 z-30 max-h-[80dvh] overflow-y-auto sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-24 sm:w-[420px] sm:max-h-[calc(100dvh-8rem)]"
+      className="fixed inset-x-2 top-[64px] bottom-[calc(96px+env(safe-area-inset-bottom))] z-30 overflow-y-auto max-sm:bg-ink-900 sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-24 sm:w-[420px] sm:max-h-[calc(100dvh-8rem)]"
     >
       <div ref={ref}>
         <PanelHeader title="How to use" subtitle="A quiet garden that makes relaxing music. Headphones make it nicer." onClose={() => patchUi({ panel: null })} />
@@ -138,6 +139,7 @@ export default function HelpPanel() {
         <h3 className="drawer-h">Tips</h3>
         <ul className="list-disc space-y-1 pl-5 text-[13px] leading-relaxed text-paper-300 marker:text-sea-400">
           <li>On iPhone, turn the silent switch off or you won&apos;t hear anything.</li>
+          <li>Tap the open sand, or the Stack Garden logo, to close any panel.</li>
           <li>Too busy? Two or three plants is often the calmest garden.</li>
           <li>Every visit starts fresh with one bonsai. To keep a garden, use <em>Copy share link</em> in Settings.</li>
         </ul>

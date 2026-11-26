@@ -56,11 +56,13 @@ export default function PlantPanel() {
   return (
     <FadePanel
       show={show}
+      mobileFrom="bottom"
       label={`${PLANT_LABELS[plant.kind]} settings`}
       id="plant-panel"
-      className="fixed inset-x-3 bottom-3 z-30 max-h-[70dvh] overflow-y-auto sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-24 sm:w-[340px] sm:max-h-[calc(100dvh-8rem)]"
+      className="fixed inset-x-2 bottom-[calc(96px+env(safe-area-inset-bottom))] z-30 max-h-[56dvh] overflow-y-auto max-sm:bg-ink-900 sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-24 sm:w-[340px] sm:max-h-[calc(100dvh-8rem)]"
     >
       <div ref={firstRef}>
+        <div aria-hidden className="mx-auto -mt-1.5 mb-3 h-1 w-10 rounded-full bg-slate-600 sm:hidden" />
         <PanelHeader
           title={PLANT_LABELS[plant.kind]}
           subtitle={`${PLANT_RECURSION[plant.kind]} · ${PLANT_ROLE[plant.kind]} · ${calls} recursive calls`}

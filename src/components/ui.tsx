@@ -3,7 +3,7 @@
 // Small design-system primitives: panel, icon button, pill slider row, toggle, segmented control.
 
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { reduceMotion as rm, uiStore, useStore } from "@/state/store";
 
 export const EASE = [0.45, 0, 0.55, 1] as const;
@@ -14,11 +14,26 @@ export function useCalmMotion() {
   return !!os || toggle;
 }
 
+const PHONE_QUERY = "(max-width: 639px)";
+/** True on phone-width screens (matches Tailwind's `sm` breakpoint). */
+export function useIsPhone() {
+  return useSyncExternalStore(
+    (cb) => {
+      const mq = window.matchMedia(PHONE_QUERY);
+      mq.addEventListener("change", cb);
+      return () => mq.removeEventListener("change", cb);
+    },
+    () => window.matchMedia(PHONE_QUERY).matches,
+    () => false,
+  );
+}
+
 export function FadePanel({
   show,
   children,
   className = "",
   from = "right",
+  mobileFrom,
   label,
   role = "dialog",
   id,
@@ -27,12 +42,16 @@ export function FadePanel({
   children: ReactNode;
   className?: string;
   from?: "right" | "bottom" | "center" | "top";
+  /** Slide direction on phones (sheets attached to the top or bottom edge). */
+  mobileFrom?: "bottom" | "top";
   label: string;
   role?: string;
   id?: string;
 }) {
   const reduced = useCalmMotion();
-  const offset = reduced ? {} : from === "right" ? { x: 24 } : from === "bottom" ? { y: 24 } : from === "top" ? { y: -12 } : { scale: 0.98 };
+  const phone = useIsPhone();
+  const dir = phone && mobileFrom ? mobileFrom : from;
+  const offset = reduced ? {} : dir === "right" ? { x: 24 } : dir === "bottom" ? { y: 32 } : dir === "top" ? { y: -12 } : { scale: 0.98 };
   return (
     <AnimatePresence>
       {show && (

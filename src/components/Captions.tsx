@@ -9,7 +9,7 @@ export default function Captions() {
   const xray = useStore(uiStore, (s) => s.xray);
   if (!started) return null;
   return (
-    <p aria-live="polite" aria-atomic="true" className="caption-strip">
+    <p aria-live="polite" aria-atomic="true" className="caption-strip w-full overflow-hidden text-ellipsis whitespace-nowrap px-2 sm:w-auto sm:overflow-visible sm:whitespace-normal sm:px-0">
       {xray ? "X-ray: the music is paused on the drone. Use the arrow keys to step through the call stack." : text}
     </p>
   );
