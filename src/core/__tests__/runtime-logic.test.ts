@@ -123,7 +123,9 @@ describe("garden helpers", () => {
     for (let i = 0; i < 60; i++) {
       const next = evolveGarden(g, rand);
       expect(next).not.toBeNull();
+      const before = g.plants.length;
       g = next!.state;
+      expect(g.plants.length).toBe(before); // never plants on its own: the visitor adds plants
       expect(g.plants.length).toBeLessThanOrEqual(MAX_GARDEN_PLANTS);
     }
     const bonsai = g.plants.find((p) => p.kind === "bonsai");

@@ -9,7 +9,6 @@ import { SCALES, midiToFreq, midiToName, quantize } from "@/core/scales";
 import { noteCaption, restCaption } from "@/core/captions";
 import { buildSteps, describeFrame, stackAt, stepForFrame, type Step } from "@/core/xray";
 import { evolveGarden } from "@/core/garden";
-import { encodeGarden } from "@/core/urlState";
 import { PLANT_LABELS } from "@/core/params";
 import { SOUND, buildEngine, type Engine, type ToneLib } from "@/audio/engine";
 import { Scheduler } from "@/audio/scheduler";
@@ -18,7 +17,8 @@ import { Renderer } from "@/visual/renderer";
 import { SessionRecorder } from "@/export/recorder";
 import { captionStore, gardenStore, patchUi, reduceMotion, uiStore, type UiState } from "@/state/store";
 
-export const STORAGE_KEY = "stack-garden:v1";
+/** Old saved-garden key (no longer used: every visit starts fresh). */
+export const LEGACY_STORAGE_KEY = "stack-garden:v1";
 const IDLE_MS = 30_000;
 const EVOLVE_EVERY_MS = 20_000;
 
@@ -31,9 +31,9 @@ class GardenRuntime {
   private unsubs: (() => void)[] = [];
   private lastFrame = new Map<string, number>();
   private lastCaption = new Map<string, { text: string; t: number }>();
+  private captionTurn = 0;
   private timers: ReturnType<typeof setInterval>[] = [];
   private pauseTimer: ReturnType<typeof setTimeout> | null = null;
-  private persistTimer: ReturnType<typeof setTimeout> | null = null;
   private lastInteraction = typeof performance !== "undefined" ? performance.now() : 0;
   private lastEvolve = 0;
   private windingDown = false;
@@ -99,7 +99,6 @@ class GardenRuntime {
     this.timers.forEach((t) => clearInterval(t));
     this.timers = [];
     if (this.pauseTimer) clearTimeout(this.pauseTimer);
-    if (this.persistTimer) clearTimeout(this.persistTimer);
     this.scheduler?.dispose();
     this.scheduler = null;
     if (this.T) {
@@ -150,7 +149,6 @@ class GardenRuntime {
     const ui = uiStore.get();
     if (ui.xray && ui.xrayPlantId && !g.plants.some((p) => p.id === ui.xrayPlantId)) this.xraySelect(g.plants[0]?.id ?? null);
     else if (ui.xray) this.updateXrayView();
-    this.schedulePersist();
   }
 
   private onUi() {
@@ -173,24 +171,6 @@ class GardenRuntime {
     if (!this.renderer) return;
     this.renderer.reduceMotion = reduceMotion(ui);
     this.renderer.selectedId = ui.selectedId;
-  }
-
-  private schedulePersist() {
-    if (uiStore.get().demo) return;
-    if (this.persistTimer) clearTimeout(this.persistTimer);
-    this.persistTimer = setTimeout(() => {
-      const enc = encodeGarden(gardenStore.get());
-      try {
-        history.replaceState(null, "", `${location.pathname}${location.search}#${enc}`);
-      } catch {
-        /* ignore */
-      }
-      try {
-        localStorage.setItem(STORAGE_KEY, enc);
-      } catch {
-        /* private mode etc. */
-      }
-    }, 600);
   }
 
   /** Tempo follows the garden; Deep Sleep glides slowly down to its end tempo. */
@@ -231,14 +211,16 @@ class GardenRuntime {
       captionStore.set("Only the drone remains. Drag a seed into the garden, or press 1–4.");
       return;
     }
-    const kinds = [...new Set(g.plants.map((p) => p.kind))] as PlantKind[];
     const now = performance.now();
-    const parts = kinds.map((k) => {
-      const c = this.lastCaption.get(k);
-      return c && now - c.t < 5000 ? c.text : restCaption[k];
-    });
-    const evolving = ui.evolveMessage && now - this.lastEvolve < 8000 ? `${ui.evolveMessage} · ` : "";
-    captionStore.set(evolving + parts.join(" · "));
+    if (ui.evolveMessage && now - this.lastEvolve < 4000) {
+      captionStore.set(ui.evolveMessage);
+      return;
+    }
+    // One plant at a time, rotating every 2 s: short and calm instead of one long line.
+    const kinds = [...new Set(g.plants.map((p) => p.kind))] as PlantKind[];
+    const k = kinds[this.captionTurn++ % kinds.length];
+    const c = this.lastCaption.get(k);
+    captionStore.set(c && now - c.t < 6000 ? c.text : restCaption[k]);
   }
 
   // ------------------------------------------------------------------ transport
@@ -278,7 +260,7 @@ class GardenRuntime {
     if (ui.started && ui.playing && !ui.xray && !ui.panel && !ui.dragKind) {
       if (now - this.lastInteraction > IDLE_MS && now - this.lastEvolve > EVOLVE_EVERY_MS) {
         this.lastEvolve = now;
-        const next = evolveGarden(gardenStore.get(), Math.random, window.innerWidth / Math.max(1, window.innerHeight));
+        const next = evolveGarden(gardenStore.get(), Math.random);
         if (next) {
           gardenStore.set(next.state);
           patchUi({ evolveMessage: next.message });

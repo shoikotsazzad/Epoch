@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // generated: compiled logo script and isolated verification builds
+    ".logo-build/**",
+    ".next-verify/**",
   ]),
 ]);
 

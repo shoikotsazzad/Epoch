@@ -72,15 +72,18 @@ export function drawSand(
     }
   }
 
-  // concentric rings in each zone
+  // a few faint concentric rings per plant (bright ripples come only with notes)
+  const ringShadow = withAlpha(color.slate600, 0.38 * strength);
+  const ringLight = withAlpha(color.sea300, 0.05 * strength);
   for (const z of zones) {
-    for (let r = z.r * 0.46; r <= z.r; r += spacing * 0.8) {
-      ctx.strokeStyle = shadow;
-      ctx.lineWidth = 1.2;
+    for (const k of [0.64, 0.76, 0.88, 1]) {
+      const r = z.r * k;
+      ctx.strokeStyle = ringShadow;
+      ctx.lineWidth = 1.1;
       ctx.beginPath();
       ctx.ellipse(z.x, z.y + 1, r, r * 0.97, 0, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.strokeStyle = light;
+      ctx.strokeStyle = ringLight;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.ellipse(z.x, z.y, r, r * 0.97, 0, 0, Math.PI * 2);

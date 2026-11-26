@@ -17,6 +17,7 @@ const KEYS: [string, string][] = [
   ["B", "Breathing guide"],
   ["E", "Export audio"],
   ["R", "New seed"],
+  ["H", "How to use (guide for new visitors)"],
   ["?", "This sheet"],
   ["Esc", "Close panels / leave X-ray"],
 ];

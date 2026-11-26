@@ -44,7 +44,7 @@ export function useStore<T, S>(store: Store<T>, selector: (s: T) => S): S {
 
 export const gardenStore = createStore<GardenState>(gardenFromPreset(DEFAULT_PRESET, 4821));
 
-export type PanelId = null | "plant" | "menu" | "export" | "shortcuts" | "sleepDone";
+export type PanelId = null | "plant" | "menu" | "export" | "shortcuts" | "sleepDone" | "help" | "mood";
 
 export interface UiState {
   started: boolean; // Begin pressed, audio unlocked
@@ -64,6 +64,7 @@ export interface UiState {
   demo: boolean;
   dragKind: PlantKind | null; // a seed being dragged from the tray
   recording: boolean;
+  helpSeen: boolean; // has this visitor opened "How to use"?
 }
 
 export const uiStore = createStore<UiState>({
@@ -84,6 +85,7 @@ export const uiStore = createStore<UiState>({
   demo: false,
   dragKind: null,
   recording: false,
+  helpSeen: true,
 });
 
 export const reduceMotion = (s: UiState) => s.reduceMotionToggle || s.osReduceMotion;

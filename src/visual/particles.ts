@@ -57,8 +57,8 @@ export function drawRipples(ctx: CanvasRenderingContext2D, ripples: Ripple[], t:
     alive.push(r);
     const k = age / r.life;
     const radius = r.r0 + age * r.speed;
-    ctx.strokeStyle = withAlpha(color.sea300, 0.24 * r.strength * (1 - k) * (1 - k));
-    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = withAlpha(color.sea300, 0.42 * r.strength * (1 - k) * (1 - k));
+    ctx.lineWidth = 1.5 - k * 0.6;
     ctx.beginPath();
     ctx.ellipse(r.x, r.y, radius, radius * 0.97, 0, 0, Math.PI * 2);
     ctx.stroke();

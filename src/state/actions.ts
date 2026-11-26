@@ -3,7 +3,8 @@
 import type { GardenState, Plant, PlantKind, PlantParamsMap, PresetId, ScaleId } from "@/core/types";
 import { PLANT_LABELS, clamp, clampParams } from "@/core/params";
 import { PRESETS, PRESET_ORDER, gardenFromPreset, makePlant } from "@/core/presets";
-import { MAX_GARDEN_PLANTS, clampToBounds, findFreeSpot } from "@/core/garden";
+import { MAX_GARDEN_PLANTS, PLANT_BOUNDS, clampToBounds, findFreeSpot, type Bounds } from "@/core/garden";
+import { plantBounds, ringRadius } from "@/visual/layout";
 import { freshSeed } from "@/core/rng";
 import { BPM_RANGE } from "@/core/urlState";
 import { captionStore, gardenStore, patchUi, uiStore } from "./store";
@@ -12,13 +13,21 @@ const setGarden = (fn: (g: GardenState) => GardenState) => gardenStore.set(fn);
 
 const aspect = () => (typeof window === "undefined" ? 1.6 : window.innerWidth / Math.max(1, window.innerHeight));
 
+/** Bounds for a plant kind on the current screen (keeps it ~120 px clear of the bars). */
+export const boundsFor = (kind: PlantKind): Bounds =>
+  typeof window === "undefined" ? PLANT_BOUNDS : plantBounds(kind, window.innerWidth, window.innerHeight);
+
 export function plantSeed(kind: PlantKind, at?: { x: number; y: number }): string | null {
   const g = gardenStore.get();
   if (g.plants.length >= MAX_GARDEN_PLANTS) {
     captionStore.set(`The garden is full (${MAX_GARDEN_PLANTS} plants). Remove one to plant another.`);
     return null;
   }
-  const spot = at ? clampToBounds(at.x, at.y) : findFreeSpot(g.plants, Math.random, aspect());
+  const b = boundsFor(kind);
+  const W = typeof window === "undefined" ? 1440 : window.innerWidth;
+  const H = typeof window === "undefined" ? 900 : window.innerHeight;
+  const radii = { self: ringRadius(kind, W, H) / H, of: (p: { kind: PlantKind }) => ringRadius(p.kind, W, H) / H };
+  const spot = at ? clampToBounds(at.x, at.y, b) : findFreeSpot(g.plants, Math.random, aspect(), b, radii);
   const plant = makePlant(kind, spot.x, spot.y);
   setGarden((s) => ({ ...s, plants: [...s.plants, plant] }));
   patchUi({ selectedId: plant.id });
@@ -55,7 +64,7 @@ export function toggleMute(id: string) {
 export function nudgePlant(id: string, dx: number, dy: number) {
   const p = gardenStore.get().plants.find((x) => x.id === id);
   if (!p) return;
-  updatePlant(id, clampToBounds(p.x + dx, p.y + dy));
+  updatePlant(id, clampToBounds(p.x + dx, p.y + dy, boundsFor(p.kind)));
 }
 
 /** Change the mood: scale, tempo, palette, reverb, drone. Keeps your plants (an empty garden gets the starter layout). */
@@ -70,9 +79,14 @@ export function applyPreset(id: PresetId) {
   captionStore.set(`Mood: ${p.name}. ${p.description}.`);
 }
 
-export function startFreshWithPreset(id: PresetId) {
-  gardenStore.set(gardenFromPreset(id, gardenStore.get().seed));
-  patchUi({ selectedId: null, panel: null });
+/** Start fresh: exactly like the first visit. Night mood, a single new bonsai, a new seed. */
+export function startFresh() {
+  const g = gardenFromPreset("night", freshSeed());
+  // a new id so the bonsai visibly grows again (and old plants fade out)
+  g.plants = [makePlant("bonsai", 0.5, 0.5, undefined, `b${Math.floor(Math.random() * 1e6).toString(36)}`)];
+  gardenStore.set(g);
+  patchUi({ selectedId: null, panel: null, evolveMessage: null });
+  captionStore.set("A fresh start: one bonsai and a new seed. Plant the rest yourself.");
 }
 
 export function newSeed() {

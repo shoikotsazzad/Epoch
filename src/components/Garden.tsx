@@ -9,7 +9,7 @@ import { gardenFromPreset } from "@/core/presets";
 import type { PlantKind } from "@/core/types";
 import { cycleSelection, newSeed, nudgePlant, plantSeed, removePlant, toggleMute } from "@/state/actions";
 import { gardenStore, patchUi, uiStore, useStore } from "@/state/store";
-import { STORAGE_KEY, getRuntime, resetRuntime } from "@/runtime/runtime";
+import { LEGACY_STORAGE_KEY, getRuntime, resetRuntime } from "@/runtime/runtime";
 import { useIdle } from "./hooks";
 import BeginScreen from "./BeginScreen";
 import TopBar from "./TopBar";
@@ -22,6 +22,7 @@ import BreathingGuide from "./BreathingGuide";
 import ExportDialog from "./ExportDialog";
 import Captions from "./Captions";
 import { ShortcutSheet, SleepDoneDialog } from "./ShortcutSheet";
+import HelpPanel, { HELP_SEEN_KEY } from "./HelpPanel";
 
 const KIND_KEYS: Record<string, PlantKind> = { "1": "bonsai", "2": "rain", "3": "stones", "4": "sunflower" };
 
@@ -31,19 +32,18 @@ function loadInitialGarden() {
     patchUi({ demo: true });
     return demoGarden();
   }
-  if (location.hash.length > 1) {
-    const g = decodeGarden(location.hash.slice(1));
-    if (g) return g;
-  }
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const g = decodeGarden(saved);
-      if (g) return g;
-    }
+    localStorage.removeItem(LEGACY_STORAGE_KEY); // older builds saved the garden; we start fresh now
   } catch {
     /* storage blocked */
   }
+  // A shared link restores that garden once; the hash is then cleared so a reload starts fresh.
+  if (location.hash.length > 1) {
+    const g = decodeGarden(location.hash.slice(1));
+    history.replaceState(null, "", location.pathname + location.search);
+    if (g) return g;
+  }
+  // Every visit starts the same way: a single bonsai playing its melody.
   return gardenFromPreset("night", 1000 + Math.floor(Math.random() * 9000));
 }
 
@@ -59,6 +59,13 @@ export default function Garden() {
   // boot: restore garden, start the renderer
   useEffect(() => {
     gardenStore.set(loadInitialGarden());
+    let seen = false;
+    try {
+      seen = localStorage.getItem(HELP_SEEN_KEY) === "1";
+    } catch {
+      /* storage blocked */
+    }
+    patchUi({ helpSeen: seen });
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     patchUi({ osReduceMotion: mq.matches });
     const onMq = () => patchUi({ osReduceMotion: mq.matches });
@@ -134,6 +141,9 @@ export default function Garden() {
         case "r":
         case "R":
           return newSeed();
+        case "h":
+        case "H":
+          return patchUi({ panel: ui.panel === "help" ? null : "help" });
         case "?":
           return patchUi({ panel: ui.panel === "shortcuts" ? null : "shortcuts" });
         case "m":
@@ -200,6 +210,7 @@ export default function Garden() {
       <AdvancedDrawer />
       <XRayOverlay />
       <ExportDialog />
+      <HelpPanel />
       <ShortcutSheet />
       <SleepDoneDialog />
       <BeginScreen />

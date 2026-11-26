@@ -6,10 +6,11 @@
 import { useRef } from "react";
 import { PLANT_LABELS, PLANT_RECURSION } from "@/core/params";
 import { plantShortDesc } from "@/core/garden";
-import { clampToBounds } from "@/core/garden";
+
 import { gardenStore, patchUi, uiStore, useStore } from "@/state/store";
-import { updatePlant } from "@/state/actions";
-import { ringRadius } from "@/visual/layout";
+import { boundsFor, updatePlant } from "@/state/actions";
+import { clampToBounds } from "@/core/garden";
+import { displayPos, ringRadius } from "@/visual/layout";
 import { useWindowSize } from "./hooks";
 
 export default function PlantOverlay() {
@@ -23,6 +24,7 @@ export default function PlantOverlay() {
     <div className="pointer-events-none fixed inset-0 z-10" aria-label="Plants in the garden" role="group">
       {plants.map((p) => {
         const R = ringRadius(p.kind, w, h);
+        const pos = displayPos(p, w, h);
         return (
           <button
             key={p.id}
@@ -31,7 +33,7 @@ export default function PlantOverlay() {
             aria-pressed={selectedId === p.id}
             aria-label={`${PLANT_LABELS[p.kind]} (${PLANT_RECURSION[p.kind]}): ${plantShortDesc(p)}${p.muted ? ", muted" : ""}. Enter to tune, arrows to move, M to mute, Delete to remove.`}
             className="plant-hit pointer-events-auto"
-            style={{ left: p.x * w - R, top: p.y * h - R, width: R * 2, height: R * 2, touchAction: "none" }}
+            style={{ left: pos.x - R, top: pos.y - R, width: R * 2, height: R * 2, touchAction: "none" }}
             onFocus={() => !xray && patchUi({ selectedId: p.id })}
             onPointerDown={(e) => {
               if (e.button !== 0) return;
@@ -46,7 +48,7 @@ export default function PlantOverlay() {
               const x = e.clientX / window.innerWidth;
               const y = e.clientY / window.innerHeight;
               cancelAnimationFrame(d.raf);
-              d.raf = requestAnimationFrame(() => updatePlant(d.id, clampToBounds(x, y)));
+              d.raf = requestAnimationFrame(() => updatePlant(d.id, clampToBounds(x, y, boundsFor(p.kind))));
             }}
             onPointerUp={() => {
               const d = drag.current;

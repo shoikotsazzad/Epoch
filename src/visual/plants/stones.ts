@@ -62,13 +62,12 @@ export function drawStones(
   for (const t of triangles) {
     const isHl = hl && (hl.stack.has(t.frameId) || hl.current === t.frameId);
     if (t.level !== Math.min(shown, pts.maxLevel) && !isHl) continue;
-    let stroke: string = withAlpha(color.sea400, xrayDim ? 0.2 : 0.35);
+    // outside X-ray the Sierpinski lines are a whisper: the stones carry the shape
+    let stroke: string = withAlpha(color.sea400, xrayDim ? 0.04 : 0.07);
     if (hl) {
       stroke = hl.stack.has(t.frameId) ? withAlpha(color.paper100, 0.9) : withAlpha(color.teal500, 0.45);
       if (hl.current === t.frameId) stroke = d.accent;
     }
-    const g = d.glow(t.frameId);
-    if (g > 0.02 && !hl) stroke = withAlpha(d.accent, 0.35 + 0.6 * g);
     ctx.strokeStyle = stroke;
     ctx.lineWidth = isHl ? 1.6 : 0.8;
     ctx.beginPath();

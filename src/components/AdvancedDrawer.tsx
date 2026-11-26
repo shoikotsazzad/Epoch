@@ -6,7 +6,7 @@ import { SCALE_LABELS, SCALES, midiToName } from "@/core/scales";
 import type { ScaleId } from "@/core/types";
 import { gardenSummary } from "@/core/garden";
 import { encodeGarden, BPM_RANGE, ROOT_RANGE } from "@/core/urlState";
-import { applyPreset, newSeed, setGlobal, startFreshWithPreset, surpriseMe } from "@/state/actions";
+import { applyPreset, newSeed, setGlobal, startFresh, surpriseMe } from "@/state/actions";
 import { gardenStore, patchUi, uiStore, useStore } from "@/state/store";
 import { getRuntime } from "@/runtime/runtime";
 import { FadePanel, LiveSlider, PanelHeader, Segmented, Slider, Toggle } from "./ui";
@@ -60,13 +60,18 @@ export default function AdvancedDrawer() {
   return (
     <FadePanel
       show={show}
-      label="More settings"
+      label="Settings"
       id="menu-drawer"
       className="fixed inset-x-3 bottom-3 z-30 max-h-[78dvh] overflow-y-auto sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-24 sm:w-[360px] sm:max-h-[calc(100dvh-8rem)]"
     >
       <div ref={ref}>
-        <PanelHeader title="Garden" subtitle={gardenSummary(garden)} onClose={() => patchUi({ panel: null })} />
+        <PanelHeader title="Settings" subtitle={gardenSummary(garden)} onClose={() => patchUi({ panel: null })} />
 
+        {/* below 768 px "How to use" lives here instead of the top bar */}
+        <button type="button" className="btn-primary mb-2 flex w-full items-center justify-center gap-2.5 py-3 md:hidden" onClick={() => patchUi({ panel: "help" })}>
+          <span aria-hidden className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-current text-[11px] font-semibold">?</span>
+          How to use
+        </button>
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
@@ -142,9 +147,9 @@ export default function AdvancedDrawer() {
               <span className="mt-1 block text-[11px] text-paper-500">{PRESETS[id].description}</span>
             </button>
           ))}
-          <button type="button" onClick={() => startFreshWithPreset(garden.preset)} className="preset-btn" title="Replace the garden with this mood's starter layout">
+          <button type="button" onClick={startFresh} className="preset-btn" title="Back to the beginning: one bonsai, a new seed">
             <span className="text-sm">Start fresh</span>
-            <span className="mt-1 block text-[11px] text-paper-500">this mood&apos;s starter garden</span>
+            <span className="mt-1 block text-[11px] text-paper-500">back to one bonsai</span>
           </button>
         </div>
 

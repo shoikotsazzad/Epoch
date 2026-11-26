@@ -30,9 +30,12 @@ export const DownloadIcon = (p: SVGProps<SVGSVGElement>) => (
     <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14" />
   </svg>
 );
-export const MoreIcon = (p: SVGProps<SVGSVGElement>) => (
+/** Sliders: reads as "settings" (clearer than a hamburger). */
+export const SlidersIcon = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base(p)}>
-    <path d="M4 7h16M4 12h10M4 17h13" />
+    <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
+    <circle cx="15" cy="7" r="2" />
+    <circle cx="9" cy="17" r="2" />
   </svg>
 );
 export const CloseIcon = (p: SVGProps<SVGSVGElement>) => (

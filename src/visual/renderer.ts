@@ -5,7 +5,7 @@ import type { GardenState, GrowResult, NoteEvent, Plant } from "@/core/types";
 import type { GrowEntry } from "@/core/growCache";
 import { PRESETS } from "@/core/presets";
 import { color, paletteVariants, withAlpha, type PaletteName } from "./tokens";
-import { glowEnvelope, plantScale, ringRadius } from "./layout";
+import { displayPos, glowEnvelope, plantScale, ringRadius } from "./layout";
 import { drawSand, type SandZone } from "./sand";
 import { drawMotes, drawRipples, makeGrain, makeMotes, makeVignette, type Drop, type Mote, type Ripple } from "./particles";
 import type { DrawCtx, Highlight } from "./plants/types";
@@ -158,14 +158,14 @@ export class Renderer {
     } else map.set(e.frameId, t);
 
     if (this.reduceMotion || e.role === "drone") return;
-    const cx = rp.plant.x * this.w;
-    const cy = rp.plant.y * this.h;
+    const { x: cx, y: cy } = displayPos(rp.plant, this.w, this.h);
     const S = plantScale(rp.plant.kind, this.w, this.h);
     if (geo.kind === "rain") {
       const bar = geo.bars.find((b) => b.frameId === e.frameId && !b.removed);
       if (bar) {
         const p = rainBarPoint(bar, rp.rainLevels, S);
-        this.drops.push({ x: cx + p.x, y0: cy + p.y, y1: cy + RAIN_GROUND * S, t0: t, dur: 0.9, strength: e.vel });
+        const land = RAIN_GROUND * S * (0.85 + ((e.frameId * 37) % 10) / 50);
+        this.drops.push({ x: cx + p.x, y0: cy + p.y, y1: cy + land, t0: t, dur: 0.9, strength: e.vel });
       }
       return;
     }
@@ -175,9 +175,9 @@ export class Renderer {
         y: cy,
         r0: ringRadius(rp.plant.kind, this.w, this.h),
         t0: t,
-        strength: Math.min(1, 0.4 + e.vel * 1.4),
-        speed: 38,
-        life: 1.9,
+        strength: Math.min(1, 0.45 + e.vel * 1.2),
+        speed: 34,
+        life: 2.4,
       });
   }
 
@@ -193,7 +193,8 @@ export class Renderer {
     const zones: SandZone[] = [];
     for (const rp of this.plants.values()) {
       if (rp.removedAt !== null) continue;
-      zones.push({ x: rp.plant.x * this.w, y: rp.plant.y * this.h, r: ringRadius(rp.plant.kind, this.w, this.h) });
+      const c = displayPos(rp.plant, this.w, this.h);
+      zones.push({ x: c.x, y: c.y, r: ringRadius(rp.plant.kind, this.w, this.h) });
     }
     const pal = paletteVariants[this.palette];
     const key = `${this.w}x${this.h}@${this.dpr}|${pal.sand}|${zones.map((z) => `${z.x.toFixed(0)},${z.y.toFixed(0)},${z.r.toFixed(0)}`).join(";")}`;
@@ -280,7 +281,7 @@ export class Renderer {
       const k = (t - d.t0) / d.dur;
       if (k >= 1) {
         if (this.ripples.length < MAX_RIPPLES)
-          this.ripples.push({ x: d.x, y: d.y1, r0: 2, t0: t, strength: Math.min(1, 0.5 + d.strength), speed: 26, life: 1.5 });
+          this.ripples.push({ x: d.x, y: d.y1, r0: 1, t0: t, strength: Math.min(0.55, 0.25 + d.strength * 0.5), speed: 16, life: 0.9 });
         continue;
       }
       alive.push(d);
@@ -297,8 +298,7 @@ export class Renderer {
     if (rp.bornAt === null || t < rp.bornAt) return;
     const { ctx, w, h } = this;
     const p = rp.plant;
-    const cx = p.x * w;
-    const cy = p.y * h;
+    const { x: cx, y: cy } = displayPos(p, w, h);
     const S = plantScale(p.kind, w, h);
     const progress = Math.min(1, (t - rp.bornAt) / GROW_SECONDS[p.kind]);
     let alpha = p.muted ? 0.4 : 1;
@@ -327,15 +327,13 @@ export class Renderer {
     else if (geo.kind === "sunflower" && rp.frameSeeds) drawSunflower(d, geo.seeds, rp.frameSeeds, d.glow);
 
     if (this.selectedId === p.id && rp.removedAt === null) {
-      // selection is shown by a dashed ring (never by colour alone)
-      const R = ringRadius(p.kind, w, h) * 1.06;
-      ctx.setLineDash([4, 7]);
-      ctx.strokeStyle = withAlpha(color.sea300, 0.65);
-      ctx.lineWidth = 1.2;
+      // selection: a faint outer ring (the plant panel / focus ring carry the rest)
+      const R = ringRadius(p.kind, w, h) * 1.04;
+      ctx.strokeStyle = withAlpha(color.sea300, 0.26);
+      ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.arc(0, 0, R, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.setLineDash([]);
     }
     ctx.restore();
   }
@@ -359,8 +357,9 @@ export class Renderer {
       const idx = rp.frameSeeds.get(xr.hl.current);
       if (idx !== undefined) pt = { x: geo.seeds[idx].x * S, y: geo.seeds[idx].y * S };
     }
-    const x = rp.plant.x * w + (pt?.x ?? 0);
-    const y = rp.plant.y * h + (pt?.y ?? -ringRadius(rp.plant.kind, w, h));
+    const c = displayPos(rp.plant, w, h);
+    const x = c.x + (pt?.x ?? 0);
+    const y = c.y + (pt?.y ?? -ringRadius(rp.plant.kind, w, h));
     ctx.save();
     ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, monospace";
     const text = xr.label;

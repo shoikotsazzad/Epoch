@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { getRuntime } from "@/runtime/runtime";
 import { uiStore, useStore } from "@/state/store";
 import { EASE, useCalmMotion } from "./ui";
+import BrandMark from "./BrandMark";
 
 export default function BeginScreen() {
   const started = useStore(uiStore, (s) => s.started);
@@ -50,6 +51,7 @@ export default function BeginScreen() {
             transition={{ duration: 1.2, ease: EASE }}
             className="flex max-w-lg flex-col items-center"
           >
+            <BrandMark size={112} className="mb-6" />
             <p className="mb-5 text-[11px] uppercase tracking-[0.3em] text-sea-300">Recursive soundscapes</p>
             <h1 className="font-display text-5xl font-medium tracking-wide text-paper-100 sm:text-6xl">Stack Garden</h1>
             <p className="mt-6 text-lg leading-relaxed text-paper-300">

@@ -9,6 +9,9 @@ const basePath = process.env.BASE_PATH || undefined;
 const nextConfig: NextConfig = {
   output: "export",
   basePath,
+  // Optional: NEXT_DIST_DIR=.next-verify gives a verification build its own folder
+  // (it then also holds the export) so it never disturbs a running `next dev`.
+  ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   images: { unoptimized: true },
   turbopack: {
     rules: {

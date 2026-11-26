@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "logo": "tsc scripts/generate-logo.ts --outDir .logo-build --rootDir . --module commonjs --target es2022 --moduleResolution node --esModuleInterop --skipLibCheck --types node && node .logo-build/scripts/generate-logo.js"
   },
   "dependencies": {
     "@breezystack/lamejs": "^1.2.7",

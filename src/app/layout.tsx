@@ -17,10 +17,21 @@ const manrope = Manrope({
   display: "swap",
 });
 
+const description =
+  "A garden of four recursive functions. Plant seeds, listen to them grow. Fractal tree, Cantor set, Sierpinski triangle and Fibonacci, turned into calm generative music.";
+
 export const metadata: Metadata = {
+  // set NEXT_PUBLIC_SITE_URL to the deployed URL so link previews get absolute image URLs
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: "Stack Garden: a garden of recursive soundscapes",
-  description:
-    "A garden of four recursive functions. Plant seeds, listen to them grow. Fractal tree, Cantor set, Sierpinski triangle and Fibonacci, turned into calm generative music.",
+  description,
+  openGraph: {
+    title: "Stack Garden",
+    description: "four recursions, one garden",
+    images: [{ url: "og-image.png", width: 1200, height: 630, alt: "Stack Garden: a bonsai drawn by recursion inside a raked-sand circle" }],
+    type: "website",
+  },
+  twitter: { card: "summary_large_image", title: "Stack Garden", description: "four recursions, one garden", images: ["og-image.png"] },
 };
 
 export const viewport: Viewport = {

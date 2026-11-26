@@ -78,13 +78,15 @@ export default function SeedTray() {
               if (e.detail > 0) e.currentTarget.blur();
             }}
             aria-keyshortcuts={key}
-            aria-label={`Plant ${PLANT_LABELS[kind]}: ${PLANT_RECURSION[kind]}, plays ${PLANT_ROLE[kind].toLowerCase()}. Shortcut ${key}.`}
+            title={`Plant ${PLANT_LABELS[kind]} (${PLANT_RECURSION[kind]}). Shortcut ${key}`}
             className="seed-btn"
             style={{ touchAction: "none" }}
           >
+            <span className="sr-only">Plant </span>
             <Glyph width={22} height={22} />
             <span className="text-[12px] font-medium text-paper-300">{PLANT_LABELS[kind]}</span>
-            <span className="hidden text-[10px] uppercase tracking-[0.08em] text-paper-500 sm:block">{PLANT_ROLE[kind]}</span>
+            <span className="hidden text-[10px] uppercase tracking-[0.08em] text-paper-300/85 sm:block">{PLANT_ROLE[kind]}</span>
+            <span className="sr-only">, {PLANT_RECURSION[kind]}, shortcut</span>
             <kbd className="kbd absolute right-1.5 top-1.5 hidden sm:block">{key}</kbd>
           </button>
         ))}

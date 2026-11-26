@@ -6,22 +6,41 @@ import { gardenFromPreset, makePlant, newPlantId } from "./presets";
 
 export const MAX_GARDEN_PLANTS = 8;
 
-/** Where plants may sit (keeps them clear of the top bar and the seed tray). */
-export const PLANT_BOUNDS = { x0: 0.12, x1: 0.88, y0: 0.27, y1: 0.72 };
-
-export function clampToBounds(x: number, y: number): { x: number; y: number } {
-  return { x: clamp(x, PLANT_BOUNDS.x0, PLANT_BOUNDS.x1), y: clamp(y, PLANT_BOUNDS.y0, PLANT_BOUNDS.y1) };
+export interface Bounds {
+  x0: number;
+  x1: number;
+  y0: number;
+  y1: number;
 }
 
-/** Pick the candidate spot farthest from existing plants (aspect = width / height of the garden). */
-export function findFreeSpot(plants: Plant[], rand: () => number, aspect = 1.6): { x: number; y: number } {
-  const { x0, x1, y0, y1 } = PLANT_BOUNDS;
+/** Default bounds (normalised) when the screen size is unknown (tests, server). */
+export const PLANT_BOUNDS: Bounds = { x0: 0.12, x1: 0.88, y0: 0.3, y1: 0.66 };
+
+export function clampToBounds(x: number, y: number, b: Bounds = PLANT_BOUNDS): { x: number; y: number } {
+  return { x: clamp(x, b.x0, b.x1), y: clamp(y, b.y0, b.y1) };
+}
+
+/** Circle sizes (in garden-height units) so spacing is measured edge to edge, not centre to centre. */
+export interface Radii {
+  self: number;
+  of: (p: Plant) => number;
+}
+
+/** Pick the candidate spot with the most open space around it (aspect = width / height of the garden). */
+export function findFreeSpot(
+  plants: Plant[],
+  rand: () => number,
+  aspect = 1.6,
+  bounds: Bounds = PLANT_BOUNDS,
+  radii: Radii = { self: 0, of: () => 0 },
+): { x: number; y: number } {
+  const { x0, x1, y0, y1 } = bounds;
   let best = { x: 0.5, y: 0.5 };
   let bestScore = -Infinity;
-  for (let i = 0; i < 48; i++) {
+  for (let i = 0; i < 96; i++) {
     const c = { x: x0 + (x1 - x0) * rand(), y: y0 + (y1 - y0) * rand() };
     let minD = Infinity;
-    for (const p of plants) minD = Math.min(minD, Math.hypot((c.x - p.x) * aspect, c.y - p.y));
+    for (const p of plants) minD = Math.min(minD, Math.hypot((c.x - p.x) * aspect, c.y - p.y) - radii.self - radii.of(p));
     // prefer open space, gently prefer the centre when the garden is empty
     const score = (plants.length ? minD : 1) - Math.hypot(c.x - 0.5, c.y - 0.5) * 0.15;
     if (score > bestScore) {
@@ -75,22 +94,10 @@ const GROW_KEY: Record<PlantKind, { key: string; ceiling: number }> = {
 
 /**
  * One idle-evolution step (Eno's Bloom: the garden keeps changing when left alone).
- * Grows a level, re-seeds a plant, or (rarely) plants a missing kind.
+ * Grows a level or re-seeds an existing plant. It never adds plants: the visitor plants their own.
  */
-export function evolveGarden(state: GardenState, rand: () => number, aspect = 1.6): { state: GardenState; message: string } | null {
+export function evolveGarden(state: GardenState, rand: () => number): { state: GardenState; message: string } | null {
   const plants = state.plants;
-  if (plants.length < 3 && plants.length < MAX_GARDEN_PLANTS && rand() < 0.25) {
-    const have = new Set(plants.map((p) => p.kind));
-    const missing = (["bonsai", "rain", "stones", "sunflower"] as PlantKind[]).filter((k) => !have.has(k));
-    if (missing.length) {
-      const kind = missing[Math.floor(rand() * missing.length)];
-      const spot = findFreeSpot(plants, rand, aspect);
-      return {
-        state: { ...state, plants: [...plants, makePlant(kind, spot.x, spot.y, undefined, newPlantId(rand))] },
-        message: `A ${PLANT_LABELS[kind].toLowerCase()} seed took root on its own`,
-      };
-    }
-  }
   if (!plants.length) return null;
   const i = Math.floor(rand() * plants.length);
   const p = plants[i];
