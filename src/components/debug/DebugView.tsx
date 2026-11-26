@@ -166,7 +166,7 @@ export default function DebugView() {
   const [scaleId, setScaleId] = useState<ScaleId>("majorPentatonic");
   return (
     <main style={{ padding: 16, fontFamily: "system-ui", color: "#ddd", background: "#000", minHeight: "100vh" }}>
-      <h1 style={{ marginTop: 0 }}>Recursion debug (temporary)</h1>
+      <h1 style={{ marginTop: 0 }}>Recursion debug (?debug=1)</h1>
       <div style={{ display: "flex", gap: 16, marginBottom: 12, alignItems: "center" }}>
         <label>
           Seed{" "}

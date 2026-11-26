@@ -56,7 +56,7 @@ Small shifts, never a new palette: they nudge the ground tint, the sand-line alp
 
 ## 3. Typography (via `next/font`)
 
-- **Display / headings:** *Shippori Mincho* 400/500. A Japanese mincho serif with refined Latin; title, plant names, Begin screen. Letter-spacing `0.02em`.
+- **Display / headings:** *Cormorant Garamond* (variable). A refined, calligraphic serif for the title, plant names and Begin screen. Letter-spacing `0.02em`. (Shippori Mincho was tried first, but as a CJK font it ships 100+ subset files and timed out during `next dev` on a slow connection.)
 - **UI:** *Manrope* (variable). Labels, values, captions. Labels are uppercase 11–12px with `tracking-label` (0.08em) at weight 500.
 - Scale: title 40/48px (mobile 32), panel heading 20px display, body 15px, label 12px, caption 13px (`text-caption`).
 - Numbers in sliders use `font-variant-numeric: tabular-nums`.
@@ -112,8 +112,39 @@ Small shifts, never a new palette: they nudge the ground tint, the sand-line alp
 - Side panel (right): the stack as a vertical list of frames, `fib(n=6)` above `fib(n=5)` and so on, indented by depth, current frame bordered in amber. Memo hits are tagged **"memo"** and drawn as pruned (dashed) branches.
 - All overlay text sits on `ink-900` ≥ 90% alpha pills, so contrast ≥ 4.5:1 regardless of the garden underneath.
 
-## 10. Sound settings
-To be documented in Milestone 2 after tuning by ear (oscillators, envelopes, FX values, levels).
+## 10. Sound settings (final)
+
+Source of truth: `src/audio/engine.ts` (`SOUND`) and `src/audio/voices.ts` (`VOICE_SETTINGS`).
+Levels were set by **measuring rendered exports** (peak / RMS / dynamic range). They were not tuned by ear, so give them a final listen on headphones.
+
+**Global**
+| Setting | Value |
+|---|---|
+| Key / scale | from preset (Night: D major pentatonic, root D3) |
+| Tempo | 56 BPM default (range 40–66); loops are defined in seconds at 56 BPM and stretch with tempo |
+| Loop cycles | Bonsai 29 s · Rain 17 s · Stones 23 s · Sunflower 37 s (pairwise coprime: the full pattern repeats only after ~117 h) |
+| Drone | sine tonic + triangle fifth an octave below the root, −30 dB, low-pass breathing 320–1100 Hz at 0.03 Hz |
+| Chain | voices → plant low-pass → panner → plant gain (×2 makeup) → bus low-pass 2.4 kHz, Q 0.5 → feedback delay (dotted quarter, fb 0.34, wet 0.18) → dry + reverb send → reverb (decay 6.5 s, pre-delay 40 ms) → high-pass 40 Hz → user volume → master +2 dB → limiter −1 dB |
+| Spatial | x → pan −0.7…+0.7; distance from centre → extra reverb send 0.06…0.38 |
+| Density | ≤ 6 notes per 2 s for the whole garden, ornaments dropped first at 4; ≥ 0.34 s between notes of one plant (≤ 3 glows/s) |
+| Register | nothing above D6; below C3 only roots and fifths |
+| Humanize | seeded ±10–30 ms timing, ±10% velocity |
+| Measured output (demo garden) | peak −5.7 dBFS, RMS −23 dBFS, 17 dB swing between quiet and busy moments |
+
+**Voices** (attack / release in seconds)
+| Plant | Timbre | Envelope | Level | Filter |
+|---|---|---|---|---|
+| Bonsai melody | FM: sine carrier, triangle modulator, harmonicity 2, index 1.1 | 0.3 / 4.5 | −1 dB | 1.5 kHz, opens +160 Hz per depth on push, closes on pop |
+| Bonsai leaf bell | FM sine/sine, harmonicity 3, index 1.6 | 0.12 / 3.5 | −11 dB | (same) |
+| Rain drop | sine | 0.05 / 2.8 (no sustain) | −7 dB | 1.7 kHz |
+| Rain ground tone | triangle | 3 / 6 | −18 dB | (same) |
+| Stones pad | FM sine/sine, harmonicity 1, index 0.8 | 2.6 / 7.5 | −5 dB | 1.2 kHz |
+| Sunflower bell | FM sine/sine, harmonicity 3.5, index 2 | 0.12 / 4.5 | −13 dB | 3 kHz |
+| X-ray step | triangle | 0.06 / 1.6 | −8 dB | bus |
+
+**Deviations from the brief, and why**
+- Bells and rain drops use 0.05–0.12 s attacks (the brief suggests 0.2–0.6 s for notes). A 0.2 s+ attack turns a bell into a swell. These are still click-free sine/FM tones at low velocity.
+- The master is +2 dB, not −14 dB. With the voices at the brief's suggested levels, the rendered export came out at about −50 dBFS for notes, and the drone drowned the music. The limiter at −1 dB keeps everything safe.
 
 ## 11. Don't
 

@@ -60,6 +60,7 @@ export const growSunflower: Grow<SunflowerParams> = (raw, rand, ctx) => {
     const cached = memo.get(k);
     if (cached !== undefined) {
       frame.memoHit = true;
+      frame.args.value = cached;
       frame.note = { degree: cached % L, octave: 3 };
       tracer.exit(frame);
       ring(cached, k, frame.id, depth, true);

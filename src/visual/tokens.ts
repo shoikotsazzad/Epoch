@@ -73,3 +73,14 @@ export function contrast(a: string, b: string): number {
   const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
   return (hi + 0.05) / (lo + 0.05);
 }
+
+/** Preset palette variants: small shifts of ground, accent and sand strength (DESIGN.md §2). */
+export const paletteVariants = {
+  night: { ground: color.ink950, accent: color.lantern400, sand: 1 },
+  dawn: { ground: "#0f1719", accent: "#ecb878", sand: 1.12 },
+  rain: { ground: "#0b1315", accent: "#dcae7a", sand: 1 },
+  floating: { ground: "#0d1416", accent: color.lantern400, sand: 0.8 },
+  deep: { ground: "#090d0f", accent: "#cf9a5c", sand: 0.85 },
+} as const;
+
+export type PaletteName = keyof typeof paletteVariants;
